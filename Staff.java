@@ -1,26 +1,28 @@
 package Other;
 
 import module java.base;
-import Main.FileStorage;
-import Main.Menu;
-import Main.User;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
 
-
+//this class focus on create staff id and
 public class Staff extends User implements FileStorage, Menu {
-        public static final String RESET = "\u001B[0m";
-        public static final String RED = "\u001B[31m";
-        public static final String GREEN = "\u001B[32m";
-
         private String role;
+        private double salary;
+        static int counter = 1;
 
         public Staff() throws IOException {
 
         }
 
-        public Staff(String username, String password, String role) throws IOException {
-            super(username, password);
+        public Staff(String id,String username, String password, String role,double salary) throws IOException {
+            super(id,username, password);
             this.role = role;
+            this.salary = salary;
         }
+
 
         public void setRole(String role) {
             this.role = role;
@@ -30,9 +32,27 @@ public class Staff extends User implements FileStorage, Menu {
             return role;
         }
 
+        public void setSalary(double salary) {
+            this.salary = salary;
+        }
+
+        public double getSalary() {
+            return salary;
+        }
+
+        //ID for different role
+        public void assignID(){
+            if(getRole().equals("Technician")){
+                setId("t" + counter);
+            } else if(getRole().equals("Manager")){
+                setId("m" + counter);
+            }
+            counter++;
+        }
+
         //Staff Credential
         public boolean credentials(String username, String password) throws IOException {
-            ArrayList<Staff> staffs = loadStaffToList();
+            ArrayList<Staff> staffs = new StaffService().loadStaffToList();
 
             for (Staff staff : staffs) {
                 // First check if credentials match
@@ -50,11 +70,52 @@ public class Staff extends User implements FileStorage, Menu {
             return false;
         }
 
+        //Verify role
         public boolean verifyRole(String role) throws IOException {
             if (role.equalsIgnoreCase("Technician") || role.equalsIgnoreCase("Manager")) {
                 return true;
             }
             return false;
+        }
+
+        public void displayStaffInfo() throws IOException {
+            ArrayList<Staff> staffList = new StaffService().loadStaffToList();
+
+            //Display Logic
+            System.out.println("|=================================================================|");
+            System.out.printf("|%-14s %-14s %-10s %-8s %s| %n",
+                    "Staff ID", "Username", "Role", "Salary", "Ticket Assigned");
+            System.out.println("|=================================================================|");
+
+            //Iterate over list
+            staffList.stream().forEach(new Consumer<Staff>() {
+                public void accept(Staff staff) {
+                    String id = staff.getId();
+                    String username = staff.getUsername();
+                    String role = staff.getRole();
+                    double salary = staff.getSalary();
+                    int ticketAssigned = 0;
+                    try {
+                        ticketAssigned = countAssignedTickets(id);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+
+
+                    System.out.printf("|%-14s %-14s %-10s %-15s %-8s| %n",
+                            id, username, role, salary, ticketAssigned);
+                }
+            });
+
+            System.out.println("|=================================================================|\n");
+        }
+
+        public int countAssignedTickets(String technicianID) throws IOException {
+            ArrayList<Ticket> ticketList = new TicketService().loadTicketToList();
+            long count = ticketList.stream()
+                    .filter(ticket -> ticket.getTicketStatus().equalsIgnoreCase("completed") )
+                    .filter(ticket -> ticket.getTechnician().equals(technicianID)).count();
+            return (int) count;
         }
 
         //Staff Main Menu
@@ -71,7 +132,7 @@ public class Staff extends User implements FileStorage, Menu {
                 //Prompt Menu
                 System.out.println("Staff Menu");
                 System.out.println("====================");
-                System.out.println("1. View Submitted Ticket"); //
+                System.out.println("1. View Submitted Ticket");
                 System.out.println("2. Edit Ticket");
                 System.out.println("3. View Ticket History");
                 System.out.println("4. Search Ticket");
@@ -83,162 +144,16 @@ public class Staff extends User implements FileStorage, Menu {
                 System.out.println();
 
                 switch (choice) {
-                    case 1 -> viewSubmittedTicket();
+                    case 1 -> new TicketService().viewSubmittedTicket();
                     case 2 -> System.out.println("Edit Ticket");
-                    case 3 -> viewTicketHistory();
-                    case 4 -> searchTicket();
+                    case 3 -> new TicketService().viewTicketHistory();
+                    case 4 -> new TicketService().searchTicket();
                     case 5 -> exit = false;
                     default -> System.out.println("Invalid choice");
                 }
             } while (exit);
 
         }
-
-        //View submitted ticket with color output and format string
-        public void viewSubmittedTicket() throws IOException {
-            ArrayList<Ticket> tickets = loadTicketToList();
-            tickets = tickets.stream()
-                    .filter(new Predicate<Ticket>() {
-                        @Override
-                        public boolean test(Ticket ticket) {
-                            return (!ticket.getTicketStatus().equalsIgnoreCase("Completed"));
-                        }
-                    }).collect(Collectors.toCollection(ArrayList::new));
-
-            System.out.println("|=========================================================================================|");
-            System.out.printf("|%-12s %-20s %-20s %-18s %-15s| %n",
-                    "Customer", "Ticket Status", "Priority Level", "Technician", "Date Submitted");
-            System.out.println("|=========================================================================================|");
-
-
-            for (int i = 0; i < tickets.size(); i++) {
-                String customerID = tickets.get(i).getCustomerID();
-                String ticketStatus = tickets.get(i).getTicketStatus();
-                String priorityLevel = tickets.get(i).getPriorityLevel();
-                String technicianID = tickets.get(i).getTechnician();
-                String date = tickets.get(i).getDate();
-
-                System.out.printf("|%-12s %-20s", customerID, ticketStatus);
-
-                if (priorityLevel.equalsIgnoreCase("HIGH")) {
-                    System.out.printf(RED + " %-20s " + RESET, priorityLevel);
-                } else {
-                    System.out.printf(" %-20s ", priorityLevel);
-                }
-
-                System.out.printf("%-18s %-15s| %n", technicianID, date);
-            }
-            System.out.println("|=========================================================================================|\n");
-
-        }
-
-        //View ticket history which only for Completed Ticket
-        public void viewTicketHistory() throws IOException {
-            ArrayList<Ticket> tickets = loadTicketToList();
-            tickets.stream()
-                    .filter(s -> s.getTicketStatus().equalsIgnoreCase("Completed"))
-                    .forEach(new Consumer<Ticket>() {
-                        @Override
-                        public void accept(Ticket ticket) {
-                            System.out.println("|=========================================================================================|");
-                            System.out.printf("|%-12s %-20s %-20s %-18s %-15s| %n",
-                                    "Customer", "Ticket Status", "Priority Level", "Technician", "Date Submitted");
-                            System.out.println("|=========================================================================================|");
-
-
-                            String customerID = ticket.getCustomerID();
-                            String ticketStatus = ticket.getTicketStatus();
-                            String priorityLevel = ticket.getPriorityLevel();
-                            String technicianID = ticket.getTechnician();
-                            String date = ticket.getDate();
-
-                            System.out.printf("|%-12s %-20s", customerID, ticketStatus);
-
-                            if (priorityLevel.equalsIgnoreCase("HIGH")) {
-                                System.out.printf(RED + " %-20s " + RESET, priorityLevel);
-                            } else {
-                                System.out.printf(" %-20s ", priorityLevel);
-                            }
-
-                            System.out.printf("%-18s %-15s| %n", technicianID, date);
-
-                            System.out.println("|=========================================================================================|\n");
-                        }
-                    });
-        }
-
-        public void searchTicket() throws IOException {
-            ArrayList<Ticket> tickets = loadTicketToList();
-            tickets.stream().filter(s -> (!s.getTicketStatus().equalsIgnoreCase("Completed"))).collect(Collectors.toCollection(ArrayList::new));
-            Scanner sc = new Scanner(System.in);
-
-            //User input keyword
-            System.out.print("Enter Keyword: ");
-            String keyword = sc.nextLine();
-
-            for (int i = 0; i < tickets.size(); i++) {
-                Ticket ticket = tickets.get(i);
-                String customerID = ticket.getCustomerID();
-                String ticketStatus = ticket.getTicketStatus();
-                String priorityLevel = ticket.getPriorityLevel().toUpperCase();
-                String technicianID = ticket.getTechnician();
-                String date = ticket.getDate();
-                if (customerID.equalsIgnoreCase(keyword) || ticketStatus.equalsIgnoreCase(keyword) ||
-                        priorityLevel.equalsIgnoreCase(keyword) || technicianID.equalsIgnoreCase(keyword)
-                        || date.equalsIgnoreCase(keyword)) {
-                    System.out.println(ticket.toString());
-                } else {
-                    System.out.println("Invalid Input. Please try again.");
-                    break;
-                }
-            }
-
-            System.out.println();
-        }
-
-        //Create a ticket object from the file then store into a list
-        public ArrayList<Ticket> loadTicketToList() throws IOException {
-            ArrayList<Ticket> tickets = new ArrayList<Ticket>();
-            String currentDirectory = System.getProperty("user.dir");
-            File file = new File(currentDirectory + File.separator + "ticket.txt");
-            try(BufferedReader br = new BufferedReader(new FileReader(file))) {
-
-                String line;
-                while ((line = br.readLine()) != null) {
-                    String[] strings = line.split(",");
-                    for (int i = 0; i < strings.length; i++) {
-                        if (strings[i].equalsIgnoreCase("null")) {
-                            strings[i] = null;
-                        }
-                    }
-                    tickets.add(new Ticket(strings[0], strings[1], strings[2],
-                            strings[3], strings[4], strings[5], strings[6], strings[7], strings[8]));
-                }
-            }
-            //br.close();
-            Collections.sort(tickets);
-            return tickets;
-        }
-
-        //Create a ticket object from the file then store into a list
-        public ArrayList<Staff> loadStaffToList() throws IOException {
-            //Read data from the text file,then store staff info to a ArrayList
-            ArrayList<Staff> staffList = new ArrayList<Staff>();
-            String currentDirectory = System.getProperty("user.dir");
-            File file = new File(currentDirectory + File.separator + "staff.txt");
-
-            try(BufferedReader br = new BufferedReader(new FileReader(file))) {
-
-                String line;
-                while ((line = br.readLine()) != null) {
-                    String[] strings = line.split(",");
-                    staffList.add(new Staff(strings[0], strings[1], strings[2]));
-                }
-            }
-            //br.close();
-            return staffList;
-        }
-
 
         //Write data into staff file
         @Override
@@ -262,7 +177,7 @@ public class Staff extends User implements FileStorage, Menu {
 
         @Override
         public String toString() {
-            return getUsername() + "," + getPassword() + "," + getRole();
+            return getId() + "," + getUsername() + "," + getPassword() + "," + getRole() + getSalary();
         }
 }
 
