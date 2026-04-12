@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class StaffService {
 
@@ -29,5 +30,39 @@ public class StaffService {
         }
         //br.close();
         return staffList;
+    }
+
+    public void staffOperationMenu() throws IOException {
+        Scanner sc = new Scanner(System.in);
+        int choice;
+        boolean exit;
+
+        do {
+            //initialize flag to true
+            exit = true;
+
+            //Prompt Menu
+            System.out.println("Staff Operation Menu");
+            System.out.println("====================");
+            System.out.println("1. View Submitted Ticket");
+            System.out.println("2. Edit Ticket");
+            System.out.println("3. View Ticket History");
+            System.out.println("4. Search Ticket");
+            System.out.println("5. Exit Staff");
+
+            System.out.print("Enter your choice: ");
+            choice = sc.nextInt();
+            sc.nextLine();
+            System.out.println();
+
+            switch (choice) {
+                case 1 -> new TicketService().viewSubmittedTicket();
+                case 2 -> System.out.println("Edit Ticket");
+                case 3 -> new TicketService().viewTicketHistory();
+                case 4 -> new TicketService().searchTicket();
+                case 5 -> exit = false;
+                default -> System.out.println("Invalid choice");
+            }
+        } while (exit);
     }
 }

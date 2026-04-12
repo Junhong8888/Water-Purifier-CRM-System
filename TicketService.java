@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Scanner;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -121,6 +119,27 @@ public class TicketService {
 
         System.out.println();
     }
+
+
+    //Add new function
+    public void updateTicketStatus(Ticket ticket) {
+        HashMap<Integer, String> map = new HashMap<>();
+
+        map.put(1, "Completed");
+        map.put(2, "Technician Assigned");
+        map.put(3, "Pending");
+
+        int flag = 0;
+        for (Map.Entry<Integer, String> entry : map.entrySet()) {
+            if (entry.getValue().equalsIgnoreCase(ticket.getTicketStatus())) {
+                flag = entry.getKey();
+            }
+        }
+
+        ticket.setTicketStatus(map.get(flag));
+    }
+
+
 
     //Create a ticket object from the file then store into a list
     public ArrayList<Ticket> loadTicketToList() throws IOException {

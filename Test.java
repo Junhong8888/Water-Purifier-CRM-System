@@ -23,28 +23,38 @@ public class Test {
                     "junhong,in progress,low,adam,08-04-2025,null,null,null,null",
                     "junhong,completed,low,adam,08-04-2025,null,null,null,null",
                     "customerID2,completed,high,m001,07-04-2025,null,null,null,null",
-                    "customerID3,in progress,high,m001,07-04-2025,null,null,null,null"
+                    "customerID3,in progress,high,m002,07-04-2025,null,null,null,null"
             );
             ticket.writeAllTickets(ticketData);
         }
 
         Staff staff = new Staff();
         staff.displayStaffInfo();
+        staff.addStaff();
+        staff.displayStaffInfo();
+        //staff.removeStaff("m001");
+        staff.displayStaffInfo();
+        staff.updateStaff();
+        staff.displayStaffInfo();
+
         //Declare value
         Scanner sc = new Scanner(System.in);
+        String staffID ;
         String username;
         String password;
 
         do {
+            System.out.println("Please enter your username:");
+            staffID = sc.nextLine();
             System.out.println("Please enter your username:");
             username = sc.nextLine();
             System.out.println("Please enter your password:");
             password = sc.nextLine();
             staff.setUsername(username);
             staff.setPassword(password);
-        } while (!staff.credentials(username, password));
+        } while (!staff.credentials(staffID,username, password));
 
         System.out.println();
-        staff.displayMenu();
+        new StaffService().staffOperationMenu();
     }
 }

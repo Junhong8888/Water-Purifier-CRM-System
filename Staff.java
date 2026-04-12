@@ -11,7 +11,16 @@ import java.util.*;
 public class Staff extends User implements FileStorage, Menu {
         private String role;
         private double salary;
-        static int counter = 1;
+        private static int counter;
+        static ArrayList<Staff> staffList;
+
+        static {
+            try {
+                staffList = new StaffService().loadStaffToList();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         public Staff() throws IOException {
 
@@ -51,12 +60,13 @@ public class Staff extends User implements FileStorage, Menu {
         }
 
         //Staff Credential
-        public boolean credentials(String username, String password) throws IOException {
-            ArrayList<Staff> staffs = new StaffService().loadStaffToList();
+        public boolean credentials(String id,String username, String password) throws IOException {
+            //ArrayList<Staff> staffs = new StaffService().loadStaffToList();
 
-            for (Staff staff : staffs) {
+
+            for (Staff staff : staffList) {
                 // First check if credentials match
-                if (staff.getUsername().equals(username) && staff.getPassword().equals(password)) {
+                if (staff.getId().equals(id) && staff.getUsername().equals(username) && staff.getPassword().equals(password)) {
                     // Then check if they have the right role
                     if (verifyRole(staff.getRole())) {
                         return true;
@@ -79,7 +89,7 @@ public class Staff extends User implements FileStorage, Menu {
         }
 
         public void displayStaffInfo() throws IOException {
-            ArrayList<Staff> staffList = new StaffService().loadStaffToList();
+            //ArrayList<Staff> staffList = new StaffService().loadStaffToList();
 
             //Display Logic
             System.out.println("|=================================================================|");
@@ -132,11 +142,10 @@ public class Staff extends User implements FileStorage, Menu {
                 //Prompt Menu
                 System.out.println("Staff Menu");
                 System.out.println("====================");
-                System.out.println("1. View Submitted Ticket");
-                System.out.println("2. Edit Ticket");
-                System.out.println("3. View Ticket History");
-                System.out.println("4. Search Ticket");
-                System.out.println("5. Exit Staff");
+                System.out.println("1. Add Staff");
+                System.out.println("2. Remove Staff");
+                System.out.println("3. Update Staff");
+                System.out.println("4. Exit");
 
                 System.out.print("Enter your choice: ");
                 choice = sc.nextInt();
@@ -144,15 +153,140 @@ public class Staff extends User implements FileStorage, Menu {
                 System.out.println();
 
                 switch (choice) {
-                    case 1 -> new TicketService().viewSubmittedTicket();
-                    case 2 -> System.out.println("Edit Ticket");
-                    case 3 -> new TicketService().viewTicketHistory();
-                    case 4 -> new TicketService().searchTicket();
-                    case 5 -> exit = false;
+                    case 1 -> addStaff();
+                    case 2 -> {
+                        if(removeStaff()){
+                            System.out.println("Staff has been removed.");
+                        } else{
+                            System.out.println("Not valid staff ID");
+                        }
+                    }
+                    case 3 -> {
+                        if(updateStaff()){
+                            System.out.println("Staff has been updated.");
+                        } else{
+                            System.out.println("Not valid staff ID");
+                        }
+                    }
+                    case 4 -> exit =  false;
                     default -> System.out.println("Invalid choice");
                 }
             } while (exit);
+        }
 
+        public boolean addStaff() throws IOException {
+            //ArrayList<Staff> staffList = new StaffService().loadStaffToList();
+            Scanner sc = new Scanner(System.in);
+            String username;
+            String password;
+            String role = null;
+            double salary;
+            int choice;
+            do{
+                System.out.print("Enter Username: ");
+                username = sc.nextLine();
+                System.out.print("Enter Password: ");
+                password = sc.nextLine();
+                System.out.print("Enter Role (1. Technician, 2. Manager): ");
+                choice = sc.nextInt();
+                switch (choice) {
+                    case 1 -> role = "Technician";
+                    case 2  -> role = "Manager";
+                    default -> System.out.println("Invalid choice");
+                }
+                sc.nextLine();
+                System.out.print("Enter Salary: ");
+                salary = sc.nextDouble();
+
+            }while(username != null && password != null && (choice != 1 && choice != 2) && salary < 0);
+
+            Staff staff = new Staff();
+            staff.setUsername(username);
+            staff.setPassword(password);
+            staff.setRole(role);
+            staff.setSalary(salary);
+            staff.assignID();
+            staffList.add(staff);
+            return true;
+        }
+
+        //Remove Staff
+        public boolean removeStaff() throws IOException {
+            //ArrayList<Staff> staffToRemove = new StaffService().loadStaffToList();
+            System.out.println("Enter Staff ID: ");
+            String staffID = new Scanner(System.in).nextLine();
+
+            for (int i = 0; i < staffList.size(); i++) {
+                if(staffList.get(i).getId().equals(staffID)){
+                    staffList.remove(i);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        //Update Staff
+        public boolean updateStaff() throws IOException {
+            //ArrayList<Staff> staff = new StaffService().loadStaffToList();
+            Scanner sc = new Scanner(System.in);
+            Staff s = null;
+            int choice;
+            String newInput;
+            double newSalary;
+
+            System.out.println("Enter Staff ID: ");
+            String staffID = sc.nextLine();
+
+            for (int i = 0; i < staffList.size(); i++) {
+                Staff temp = staffList.get(i);
+                if(temp.getId().equals(staffID)){
+                    s = temp;
+                }
+            }
+
+            if(s != null) {
+                do {
+                    System.out.println("Choose what you want to update: ");
+                    System.out.println("1.Username");
+                    System.out.println("2. Password");
+                    System.out.println("3. Role");
+                    System.out.println("4. Salary");
+                    System.out.println("5. Exit Update");
+                    System.out.print("Enter your choice: ");
+                    choice = sc.nextInt();
+                    sc.nextLine();
+
+                    switch (choice) {
+                        case 1 -> {
+                            System.out.println("Enter New Username: ");
+                            newInput = sc.nextLine();
+                            s.setUsername(newInput);
+                            System.out.println("Updated Username: " + s.getUsername());
+                        }
+                        case 2 -> {
+                            System.out.println("Enter New Password: ");
+                            newInput = sc.nextLine();
+                            s.setPassword(newInput);
+                            System.out.println("Updated Password: " + s.getPassword());
+                        }
+                        case 3 -> {
+                            System.out.println("Enter New Role: ");
+                            newInput = sc.nextLine();
+                            s.setRole(newInput);
+                            System.out.println("Updated Role: " + s.getRole());
+                        }
+                        case 4 -> {
+                            System.out.println("Enter New Salary: ");
+                            salary = sc.nextDouble();
+                            s.setSalary(salary);
+                            System.out.println("Updated Salary: " + s.getSalary());
+                        }
+                    }
+                } while (choice != 5);
+
+                return true;
+            }
+            return false;
         }
 
         //Write data into staff file
@@ -177,7 +311,7 @@ public class Staff extends User implements FileStorage, Menu {
 
         @Override
         public String toString() {
-            return getId() + "," + getUsername() + "," + getPassword() + "," + getRole() + getSalary();
+            return getId() + "," + getUsername() + "," + getPassword() + "," + getRole() + "," + getSalary();
         }
 }
 

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class Ticket implements Comparable<Ticket>, FileStorage {
+    private String id;
     private String customerID;
     private String ticketStatus;
     private String priorityLevel;
@@ -16,11 +17,11 @@ public class Ticket implements Comparable<Ticket>, FileStorage {
     private String description;
     private String content;
     private String response;
-
+    static int count = 0;
 
 
     public Ticket() {
-
+        this.id = assignID();
     }
 
     public Ticket(String customerID, String ticketStatus, String priorityLevel, String technician,
@@ -30,10 +31,12 @@ public class Ticket implements Comparable<Ticket>, FileStorage {
         this.priorityLevel = priorityLevel;
         this.technician = technician;
         this.date = date;
+        this.id = assignID();
     }
 
     public Ticket(String customerID, String ticketStatus, String priorityLevel, String technician,
                   String date, String resolveTime, String description, String content, String response) {
+        this.id = assignID();
         this.customerID = customerID;
         this.ticketStatus = ticketStatus;
         this.priorityLevel = priorityLevel;
@@ -43,6 +46,12 @@ public class Ticket implements Comparable<Ticket>, FileStorage {
         this.description = description;
         this.content = content;
         this.response = response;
+    }
+
+    public String assignID(){
+        id = "t" + count;
+        count++;
+        return id;
     }
 
     public String getCustomerID() {
