@@ -2,6 +2,9 @@ package Other;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -15,7 +18,10 @@ public class Test {
             Staff staff = new Staff();
             staff.writeFile("m001,Junhong,junhong,Manager,2500.00");
 
-            Ticket ticket = new Ticket();
+            Ticket ticket = new Ticket("customerID","in progress","high","technicianID","08-04-2025",null,"Repair Water Purifier",null,null);
+            //ticket.assignID();
+            ticket.makeBooking();
+            System.out.println(ticket.getTimeSlotBooking());
 
             List<String> ticketData = Arrays.asList(
                     "customerID,in progress,high,technicianID,08-04-2025,null,null,null,null",
@@ -27,6 +33,8 @@ public class Test {
             );
             ticket.writeAllTickets(ticketData);
         }
+
+
 
         Staff staff = new Staff();
         staff.displayStaffInfo();

@@ -17,7 +17,8 @@ public class Ticket implements Comparable<Ticket>, FileStorage {
     private String description;
     private String content;
     private String response;
-    static int count = 0;
+    private TimeSlotBooking timeSlotBooking;
+    static int count = 1;
 
 
     public Ticket() {
@@ -126,10 +127,31 @@ public class Ticket implements Comparable<Ticket>, FileStorage {
         this.response = response;
     }
 
+    public TimeSlotBooking getTimeSlotBooking() {
+        return timeSlotBooking;
+    }
+
+    public void setTimeSlotBooking(TimeSlotBooking timeSlotBooking) {
+        this.timeSlotBooking = timeSlotBooking;
+    }
+
+    //Make booking if the description is repair or maintenance service
+    public void makeBooking() throws IOException {
+        String descr = this.getDescription();
+        if(descr.equalsIgnoreCase("Repair Water Purifier") ||
+                descr.equalsIgnoreCase("Water Purifier Maintenance")){
+
+            TimeSlotBooking booking = new TimeSlotBooking();
+            booking.selectTimeSlotBooking(id);
+            setTimeSlotBooking(booking);
+            timeSlotBooking.writeFile(id + "," + timeSlotBooking.getDateTime());
+        }
+    }
+
     @Override
     public String toString() {
         return customerID + "," +  ticketStatus + "," + priorityLevel + "," + technician + "," + date
-        + "," + resolveTime + "," + description + "," + content + "," + response;
+        + "," + resolveTime + "," + description + "," + content + "," + response + "," + timeSlotBooking.toString();
 
     }
 
