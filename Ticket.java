@@ -169,10 +169,10 @@ public class Ticket implements Comparable<Ticket>, FileStorage {
 
     @Override
     public void writeFile(String data) throws IOException {
-        String path = System.getProperty("user.dir");
-        File file = new File(path + File.separator + "ticket.txt");
+        File file = new File("C:\\crmSystem\\staff.txt" );
 
         if (!file.exists()) {
+            //file.mkdirs();
             boolean newFile = file.createNewFile();
             System.out.println(newFile);
         }
@@ -185,8 +185,9 @@ public class Ticket implements Comparable<Ticket>, FileStorage {
     }
 
     public void writeAllTickets(List<String> lines) {
+        File file = new File("C:\\crmSystem\\staff.txt" );
         // Opening the BufferedWriter here once wipes the old file
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter("ticket.txt"))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
             for (String line : lines) {
                 bw.write(line);
                 bw.newLine();

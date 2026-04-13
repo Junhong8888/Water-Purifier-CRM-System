@@ -17,8 +17,8 @@ public class StaffService {
     public ArrayList<Staff> loadStaffToList() throws IOException {
         //Read data from the text file,then store staff info to a ArrayList
         ArrayList<Staff> staffList = new ArrayList<>();
-        String currentDirectory = System.getProperty("user.dir");
-        File file = new File(currentDirectory + File.separator + "staff.txt");
+        //String currentDirectory = System.getProperty("user.dir");
+        File file = new File("C:\\crmSystem\\staff.txt");
 
         try(BufferedReader br = new BufferedReader(new FileReader(file))) {
 

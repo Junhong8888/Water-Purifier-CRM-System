@@ -144,8 +144,8 @@ public class TicketService {
     //Create a ticket object from the file then store into a list
     public ArrayList<Ticket> loadTicketToList() throws IOException {
         ArrayList<Ticket> tickets = new ArrayList<Ticket>();
-        String currentDirectory = System.getProperty("user.dir");
-        File file = new File(currentDirectory + File.separator + "ticket.txt");
+        //String currentDirectory = System.getProperty("user.dir");
+        File file = new File("C:\\crmSystem\\ticket.txt");
         try(BufferedReader br = new BufferedReader(new FileReader(file))) {
 
             String line;

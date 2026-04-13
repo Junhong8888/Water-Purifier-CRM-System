@@ -293,8 +293,8 @@ public class Staff extends User implements FileStorage, Menu {
         @Override
         public void writeFile(String data) throws IOException {
             //pass staff info in terms of string, then write the file
-            String currentDirectory = System.getProperty("user.dir");
-            File file = new File(currentDirectory + File.separator + "staff.txt");
+            //String currentDirectory = System.getProperty("user.dir");
+            File file = new File("C:\\crmSystem\\staff.txt");
 
             if (!file.exists()) {
                 boolean newFile = file.createNewFile();

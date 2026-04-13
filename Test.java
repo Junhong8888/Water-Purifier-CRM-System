@@ -15,6 +15,15 @@ public class Test {
     public static void main(String[] args) throws IOException {
 
         {
+            /*File file3 = new File("C:\\crmSystem");
+            file3.mkdir();
+            File file = new File("C:\\crmSystem\\staff.txt");
+            File file2 = new File("C:\\crmSystem\\ticket.txt");
+
+            file.createNewFile();
+            file2.createNewFile();*/
+
+
             Staff staff = new Staff();
             staff.writeFile("m001,Junhong,junhong,Manager,2500.00");
 
