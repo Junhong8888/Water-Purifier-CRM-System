@@ -1,10 +1,11 @@
 package CRM;
 
-import module java.base;
-
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Consumer;
 
 //this class focus on create staff id and
 public class Staff extends User implements FileStorage, Menu {
@@ -12,6 +13,7 @@ public class Staff extends User implements FileStorage, Menu {
         private double salary;
         private static int counter;
         static ArrayList<Staff> staffList;
+        private static final TicketService ticketService = new TicketService();
 
         static {
             try {
@@ -93,12 +95,11 @@ public class Staff extends User implements FileStorage, Menu {
             //Display Logic
             System.out.println("|=================================================================|");
             System.out.printf("|%-14s %-14s %-10s %-8s %s| %n",
-                    "CRM.Staff ID", "Username", "Role", "Salary", "CRM.Ticket Assigned");
+                    "Staff ID", "Username", "Role", "Salary", "Ticket Assigned");
             System.out.println("|=================================================================|");
 
             //Iterate over list
-            staffList.stream().forEach(new Consumer<Staff>() {
-                public void accept(Staff staff) {
+            staffList.forEach(staff -> {
                     String id = staff.getId();
                     String username = staff.getUsername();
                     String role = staff.getRole();
@@ -113,14 +114,15 @@ public class Staff extends User implements FileStorage, Menu {
 
                     System.out.printf("|%-14s %-14s %-10s %-15s %-8s| %n",
                             id, username, role, salary, ticketAssigned);
-                }
+
             });
 
             System.out.println("|=================================================================|\n");
         }
 
         public int countAssignedTickets(String technicianID) throws IOException {
-            ArrayList<Ticket> ticketList = new TicketService().loadTicketToList();
+            ArrayList<Ticket> ticketList = ticketService.loadTicketToList();
+            //ArrayList<Ticket> ticketList = new TicketService().loadTicketToList();
             long count = ticketList.stream()
                     .filter(ticket -> ticket.getTicketStatus().equalsIgnoreCase("completed") )
                     .filter(ticket -> ticket.getTechnician().equals(technicianID)).count();
@@ -212,8 +214,9 @@ public class Staff extends User implements FileStorage, Menu {
         //Remove CRM.Staff
         public boolean removeStaff() throws IOException {
             //ArrayList<CRM.Staff> staffToRemove = new CRM.StaffService().loadStaffToList();
+            Scanner sc = new Scanner(System.in);
             System.out.println("Enter CRM.Staff ID: ");
-            String staffID = new Scanner(System.in).nextLine();
+            String staffID = sc.nextLine();
 
             for (int i = 0; i < staffList.size(); i++) {
                 if(staffList.get(i).getId().equals(staffID)){
@@ -293,17 +296,26 @@ public class Staff extends User implements FileStorage, Menu {
         public void writeFile(String data) throws IOException {
             //pass staff info in terms of string, then write the file
             //String currentDirectory = System.getProperty("user.dir");
-            File file = new File("C:\\crmSystem\\staff.txt");
 
-            if (!file.exists()) {
-                boolean newFile = file.createNewFile();
-                System.out.println(newFile);
+            File file = null;
+            try {
+                file = new File("C:\\crmSystem\\staff.txt");
+                if (!file.getParentFile().exists()) {
+                    file.getParentFile().mkdirs();
+                }
+                if (!file.exists()) {
+                    boolean created = file.createNewFile();
+                    if (!created) throw new IOException("Failed to create file");
+                }
+            } catch (IOException e) {
+                System.err.println("File error: " + e.getMessage());
+                e.printStackTrace();
             }
 
             BufferedWriter fr = new BufferedWriter(
-                    new FileWriter(file));
+                    new FileWriter(file,true));
 
-            fr.write(data,0,data.length());
+            fr.write(data, 0, data.length());
             fr.newLine();
             fr.close();
 
