@@ -26,7 +26,7 @@ public class AuthService {
             // 1. Check Staff / Manager / Technician Logins
             if (!expectedRole.equalsIgnoreCase("Customer")) {
                 StaffService ss = new StaffService();
-                for (Staff s : ss.loadStaffToList()) {
+                for (Staff s : Staff.staffList) {
                     if (s.getUsername().equalsIgnoreCase(username) && s.getPassword().equals(password)) {
                         credentialsMatched = true;
                         

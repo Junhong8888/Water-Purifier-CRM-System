@@ -1,4 +1,6 @@
-package CRM;
+package CRMver2;
+
+import CRMver2.FileStorage;
 
 import java.io.*;
 import java.text.DateFormat;
