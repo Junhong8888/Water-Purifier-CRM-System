@@ -194,7 +194,8 @@ public class Ticket implements Comparable<Ticket>, FileStorage {
 
     @Override
     public void writeFile(String data) throws IOException {
-        File file = new File("C:\\crmSystem\\ticket.txt");
+        String path = System.getProperty("user.dir");
+        File file = new File(path + File.separator + "ticket.txt");
         ensureDirectoryExists(file);
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
@@ -203,11 +204,11 @@ public class Ticket implements Comparable<Ticket>, FileStorage {
         }
     }
 
+    // ── Bulk-write (overwrites entire file) ────────────────────────────────────
     public void writeAllTickets(List<String> lines) throws IOException {
-        File file = new File("C:\\crmSystem\\ticket.txt");
-        ensureDirectoryExists(file);
-
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+        String path = System.getProperty("user.dir");
+        File file = new File(path + File.separator + "ticket.txt");
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, false))) {
             for (String line : lines) {
                 bw.write(line);
                 bw.newLine();
