@@ -116,10 +116,10 @@ public class Staff extends User implements FileStorage, Menu {
     // FIX 7: pass username to countAssignedTickets, not id
     // ---------------------------------------------------------------
     public void displayStaffInfo() throws IOException {
-        System.out.println("\n  |===================================================================|");
+        System.out.println("\n  |====================================================================|");
         System.out.printf("  |%-12s %-14s %-12s %-12s %-15s|%n",
                 "Staff ID", "Username", "Role", "Salary", "Tickets Assigned");
-        System.out.println("  |===================================================================|");
+        System.out.println("  |======================================================================|");
 
         for (Staff staff : staffList) {
             int assigned = 0;

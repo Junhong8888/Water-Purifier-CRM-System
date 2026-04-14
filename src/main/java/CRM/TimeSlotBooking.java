@@ -1,6 +1,8 @@
 package CRM;
 
 import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -9,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class TimeSlotBooking implements FileStorage {
+    public static final String STRIKE = "\u001B[9m";
+    public static final String RESET = "\u001B[0m";
 
     private static final String[] AVAILABLE_TIME_SLOTS =
             {"10:00:00", "12:00:00", "14:00:00", "16:00:00", "18:00:00"};
@@ -79,12 +83,13 @@ public class TimeSlotBooking implements FileStorage {
                 System.out.println("  Date cannot be in the past. Please enter a future date.");
                 continue;
             }
-
+            System.out.println(chosenDate);
             // --- Time slot selection ---
             System.out.println("\n  Available Time Slots:");
             for (int i = 0; i < AVAILABLE_TIME_SLOTS.length; i++) {
                 System.out.printf("    [%d] %s%n", i + 1, AVAILABLE_TIME_SLOTS[i]);
             }
+            //checkTimeSlot(chosenDate);
             System.out.print("  Select a time slot (1-" + AVAILABLE_TIME_SLOTS.length + "): ");
 
             int slotIndex;
@@ -130,6 +135,28 @@ public class TimeSlotBooking implements FileStorage {
             }
         }
         return false;
+    }
+
+    private void checkTimeSlot(LocalDate localDate) {
+        ArrayList<TimeSlotBooking> existing = loadTimeSlotBookingToList();
+        boolean booked = false;
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+
+        for (TimeSlotBooking b : existing) {
+            System.out.println(b.getDateTime());
+//            if (b.getDateTime().toLocalDate().format(dateFormat).equals(localDate)) {
+//                booked = true;
+//            }
+        }
+
+        System.out.println("\n  Available Time Slots:");
+        for (int i = 0; i < AVAILABLE_TIME_SLOTS.length; i++) {
+            if(booked) {
+                System.out.printf("%s    [%d] %s %s%n",STRIKE, i + 1, AVAILABLE_TIME_SLOTS[i],RESET);
+            } else{
+                System.out.printf("    [%d] %s%n", i + 1, AVAILABLE_TIME_SLOTS[i]);
+            }
+        }
     }
 
     // ---------------------------------------------------------------
