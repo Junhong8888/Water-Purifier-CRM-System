@@ -5,163 +5,295 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class TicketService {
     public static final String RESET = "\u001B[0m";
     public static final String RED = "\u001B[31m";
     public static final String GREEN = "\u001B[32m";
+    public static final String YELLOW = "\u001B[33m";
 
-    public TicketService() {
+    public TicketService() {}
 
-    }
-
-    //View submitted ticket with color output and format string
+    // ---------------------------------------------------------------
+    // VIEW SUBMITTED TICKETS — excludes Completed tickets
+    // ---------------------------------------------------------------
     public void viewSubmittedTicket() throws IOException {
-        ArrayList<Ticket> tickets = loadTicketToList();
-        tickets = tickets.stream()
-                .filter(new Predicate<Ticket>() {
-                    @Override
-                    public boolean test(Ticket ticket) {
-                        return (!ticket.getTicketStatus().equalsIgnoreCase("Completed"));
-                    }
-                }).collect(Collectors.toCollection(ArrayList::new));
+        ArrayList<Ticket> tickets = loadTicketToList()
+                .stream()
+                .filter(t -> !t.getTicketStatus().equalsIgnoreCase("Completed"))
+                .collect(Collectors.toCollection(ArrayList::new));
 
-        System.out.println("|=========================================================================================|");
-        System.out.printf("|%-12s %-20s %-20s %-18s %-15s| %n",
-                "Customer", "CRM.Ticket Status", "Priority Level", "CRM.Technician", "Date Submitted");
-        System.out.println("|=========================================================================================|");
-
-
-        for (int i = 0; i < tickets.size(); i++) {
-            String customerID = tickets.get(i).getCustomerID();
-            String ticketStatus = tickets.get(i).getTicketStatus();
-            String priorityLevel = tickets.get(i).getPriorityLevel();
-            String technicianID = tickets.get(i).getTechnician();
-            String date = tickets.get(i).getDate();
-
-            System.out.printf("|%-12s %-20s", customerID, ticketStatus);
-
-            if (priorityLevel.equalsIgnoreCase("HIGH")) {
-                System.out.printf(RED + " %-20s " + RESET, priorityLevel);
-            } else {
-                System.out.printf(" %-20s ", priorityLevel);
-            }
-
-            System.out.printf("%-18s %-15s| %n", technicianID, date);
+        if (tickets.isEmpty()) {
+            System.out.println("\n  No active tickets found.\n");
+            return;
         }
-        System.out.println("|=========================================================================================|\n");
+
+        printTicketTable("ACTIVE TICKETS", tickets);
     }
 
-    //View ticket history which only for Completed CRM.Ticket
+    // ---------------------------------------------------------------
+    // VIEW TICKET HISTORY — only Completed tickets
+    // ---------------------------------------------------------------
     public void viewTicketHistory() throws IOException {
-        ArrayList<Ticket> tickets = loadTicketToList();
-        System.out.println("|=========================================================================================|");
-        System.out.printf("|%-12s %-20s %-20s %-18s %-15s| %n",
-                "Customer", "CRM.Ticket Status", "Priority Level", "CRM.Technician", "Date Submitted");
-        System.out.println("|=========================================================================================|");
+        ArrayList<Ticket> tickets = loadTicketToList()
+                .stream()
+                .filter(t -> t.getTicketStatus().equalsIgnoreCase("Completed"))
+                .collect(Collectors.toCollection(ArrayList::new));
 
-        tickets.stream()
-                .filter(s -> s.getTicketStatus().equalsIgnoreCase("Completed"))
-                .forEach(new Consumer<Ticket>() {
-                    @Override
-                    public void accept(Ticket ticket) {
+        if (tickets.isEmpty()) {
+            System.out.println("\n  No completed tickets found.\n");
+            return;
+        }
 
-                        String customerID = ticket.getCustomerID();
-                        String ticketStatus = ticket.getTicketStatus();
-                        String priorityLevel = ticket.getPriorityLevel();
-                        String technicianID = ticket.getTechnician();
-                        String date = ticket.getDate();
-
-                        System.out.printf("|%-12s %-20s", customerID, ticketStatus);
-
-                        if (priorityLevel.equalsIgnoreCase("HIGH")) {
-                            System.out.printf(RED + " %-20s " + RESET, priorityLevel);
-                        } else {
-                            System.out.printf(" %-20s ", priorityLevel);
-                        }
-
-                        System.out.printf("%-18s %-15s| %n", technicianID, date);
-
-                    }
-                });
-
-        System.out.println("|=========================================================================================|\n");
+        printTicketTable("TICKET HISTORY (Completed)", tickets);
     }
 
+    // ---------------------------------------------------------------
+    // SEARCH TICKET
+    // Bug fixes:
+    //   1. Filter result was never assigned back — now it is
+    //   2. "Invalid Input" printed on every non-match instead of
+    //      only when zero results found — fixed with a found flag
+    // ---------------------------------------------------------------
     public void searchTicket() throws IOException {
-        ArrayList<Ticket> tickets = loadTicketToList();
-        tickets.stream().filter(s -> (!s.getTicketStatus().equalsIgnoreCase("Completed"))).collect(Collectors.toCollection(ArrayList::new));
         Scanner sc = new Scanner(System.in);
+        System.out.print("  Enter keyword to search: ");
+        String keyword = sc.nextLine().trim();
 
-        //CRM.User input keyword
-        System.out.print("Enter Keyword: ");
-        String keyword = sc.nextLine();
-
-        for (int i = 0; i < tickets.size(); i++) {
-            Ticket ticket = tickets.get(i);
-            String customerID = ticket.getCustomerID();
-            String ticketStatus = ticket.getTicketStatus();
-            String priorityLevel = ticket.getPriorityLevel().toUpperCase();
-            String technicianID = ticket.getTechnician();
-            String date = ticket.getDate();
-            if (customerID.equalsIgnoreCase(keyword) || ticketStatus.equalsIgnoreCase(keyword) ||
-                    priorityLevel.equalsIgnoreCase(keyword) || technicianID.equalsIgnoreCase(keyword)
-                    || date.equalsIgnoreCase(keyword)) {
-                System.out.println(ticket.toString());
-            } else {
-                System.out.println("Invalid Input. Please try again.");
-                break;
-            }
+        if (keyword.isEmpty()) {
+            System.out.println("  Keyword cannot be empty.");
+            return;
         }
 
-        System.out.println();
+        // FIX: assign the filtered result back into a variable
+        ArrayList<Ticket> results = loadTicketToList()
+                .stream()
+                .filter(t -> !t.getTicketStatus().equalsIgnoreCase("Completed"))
+                .filter(t -> matchesKeyword(t, keyword))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        if (results.isEmpty()) {
+            // FIX: only print "not found" once, not per-ticket
+            System.out.println("  No tickets found matching: \"" + keyword + "\"\n");
+        } else {
+            printTicketTable("SEARCH RESULTS for \"" + keyword + "\"", results);
+        }
     }
 
+    // Checks all relevant fields of a ticket against the keyword (case-insensitive)
+    private boolean matchesKeyword(Ticket t, String keyword) {
+        return (t.getCustomerID()    != null && t.getCustomerID().equalsIgnoreCase(keyword))
+                || (t.getTicketStatus()  != null && t.getTicketStatus().equalsIgnoreCase(keyword))
+                || (t.getPriorityLevel() != null && t.getPriorityLevel().equalsIgnoreCase(keyword))
+                || (t.getTechnician()    != null && t.getTechnician().equalsIgnoreCase(keyword))
+                || (t.getDate()          != null && t.getDate().equalsIgnoreCase(keyword))
+                || (t.getDescription()   != null && t.getDescription().equalsIgnoreCase(keyword));
+    }
 
-    //Add new function
+    // ---------------------------------------------------------------
+    // UPDATE TICKET STATUS
+    // Bug fix: HashMap lookup found the current status key then set
+    // the SAME status back. Fixed with a clear transition map.
+    //
+    // Transition order:
+    //   Pending → Technician Assigned → Completed
+    //   Completed stays Completed (terminal state)
+    // ---------------------------------------------------------------
     public void updateTicketStatus(Ticket ticket) {
-        HashMap<Integer, String> map = new HashMap<>();
-
-        map.put(1, "Completed");
-        map.put(2, "CRM.Technician Assigned");
-        map.put(3, "Pending");
-
-        int flag = 0;
-        for (Map.Entry<Integer, String> entry : map.entrySet()) {
-            if (entry.getValue().equalsIgnoreCase(ticket.getTicketStatus())) {
-                flag = entry.getKey();
-            }
+        if (ticket == null || ticket.getTicketStatus() == null) {
+            System.out.println("  Cannot update status: ticket is null or has no status.");
+            return;
         }
 
-        ticket.setTicketStatus(map.get(flag));
+        // FIX: explicit transitions instead of a HashMap key lookup
+        Map<String, String> transitions = new LinkedHashMap<>();
+        transitions.put("pending",             "Technician Assigned");
+        transitions.put("technician assigned", "Completed");
+        transitions.put("completed",           "Completed"); // terminal — no further change
+
+        String current = ticket.getTicketStatus().toLowerCase();
+        String next = transitions.get(current);
+
+        if (next == null) {
+            System.out.printf("  Unknown status \"%s\" — no transition defined.%n",
+                    ticket.getTicketStatus());
+            return;
+        }
+
+        if (next.equalsIgnoreCase(ticket.getTicketStatus())) {
+            System.out.println("  Ticket is already Completed — no further status change.");
+            return;
+        }
+
+        System.out.printf("  Status updated: [%s] → [%s]%n",
+                ticket.getTicketStatus(), next);
+        ticket.setTicketStatus(next);
     }
 
+    // ---------------------------------------------------------------
+    // ADD RESPONSE TO TICKET
+    // Prompts staff for a response string and saves it to the ticket.
+    // Persists the change immediately by rewriting the file.
+    // ---------------------------------------------------------------
+    public void addResponse(Ticket ticket) throws IOException {
+        if (ticket == null) {
+            System.out.println("  No ticket selected.");
+            return;
+        }
 
+        Scanner sc = new Scanner(System.in);
+        System.out.printf("  Adding response to ticket (Customer: %s | Status: %s)%n",
+                ticket.getCustomerID(), ticket.getTicketStatus());
+        System.out.print("  Enter response: ");
+        String response = sc.nextLine().trim();
 
-    //Create a ticket object from the file then store into a list
+        if (response.isEmpty()) {
+            System.out.println("  Response cannot be empty. No changes made.");
+            return;
+        }
+
+        ticket.setResponse(response);
+
+        // Persist: reload all, replace the matching ticket, rewrite file
+        persistTicketChange(ticket);
+        System.out.println("  ✓ Response saved successfully.");
+    }
+
+    // ---------------------------------------------------------------
+    // LOAD ALL TICKETS FROM FILE INTO A SORTED LIST
+    // Bug fixes:
+    //   1. split(",") drops trailing empty fields → use split(",",-1)
+    //   2. ArrayIndexOutOfBoundsException if line has < 9 fields —
+    //      now skips malformed lines with a warning
+    // ---------------------------------------------------------------
     public ArrayList<Ticket> loadTicketToList() throws IOException {
-        ArrayList<Ticket> tickets = new ArrayList<Ticket>();
-        //String currentDirectory = System.getProperty("user.dir");
+        ArrayList<Ticket> tickets = new ArrayList<>();
         File file = new File("C:\\crmSystem\\ticket.txt");
-        try(BufferedReader br = new BufferedReader(new FileReader(file))) {
 
+        if (!file.exists()) {
+            return tickets; // return empty list rather than crash
+        }
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
+            int lineNumber = 0;
+
             while ((line = br.readLine()) != null) {
-                String[] strings = line.split(",");
-                for (int i = 0; i < strings.length; i++) {
-                    if (strings[i].equalsIgnoreCase("null")) {
-                        strings[i] = null;
+                lineNumber++;
+                // FIX: use -1 to keep trailing empty fields (e.g. empty response)
+                String[] parts = line.split(",", -1);
+
+                if (parts.length < 9) {
+                    System.out.printf("  Warning: skipping malformed line %d " +
+                                    "(expected 9+ fields, got %d): %s%n",
+                            lineNumber, parts.length, line);
+                    continue;
+                }
+
+                // Replace the string "null" with actual null for each field
+                for (int i = 0; i < parts.length; i++) {
+                    if (parts[i].equalsIgnoreCase("null") || parts[i].isBlank()) {
+                        parts[i] = null;
                     }
                 }
-                tickets.add(new Ticket(strings[0], strings[1], strings[2],
-                        strings[3], strings[4], strings[5], strings[6], strings[7], strings[8]));
+
+                try {
+                    tickets.add(new Ticket(
+                            parts[0],   // customerID
+                            parts[1],   // ticketStatus
+                            parts[2],   // priorityLevel
+                            parts[3],   // technician
+                            parts[4],   // date
+                            parts[5],   // resolveTime
+                            parts[6],   // description
+                            parts[7],   // content
+                            parts[8]    // response
+                    ));
+                } catch (Exception e) {
+                    System.out.printf("  Warning: could not parse line %d: %s%n",
+                            lineNumber, e.getMessage());
+                }
             }
         }
-        //br.close();
-        Collections.sort(tickets);
+
+        Collections.sort(tickets); // uses Ticket.compareTo()
         return tickets;
+    }
+
+    // ---------------------------------------------------------------
+    // PERSIST A SINGLE TICKET CHANGE
+    // Reloads all tickets, replaces the matching one, rewrites file.
+    // Match key: customerID + date + description (no stored ID yet).
+    // ---------------------------------------------------------------
+    public void persistTicketChange(Ticket updated) throws IOException {
+        ArrayList<Ticket> all = loadTicketToList();
+        List<String> updatedLines = new ArrayList<>();
+        boolean found = false;
+
+        for (Ticket t : all) {
+            boolean isMatch = !found
+                    && equals(t.getCustomerID(),  updated.getCustomerID())
+                    && equals(t.getDate(),         updated.getDate())
+                    && equals(t.getDescription(),  updated.getDescription());
+
+            if (isMatch) {
+                updatedLines.add(updated.toString());
+                found = true;
+            } else {
+                updatedLines.add(t.toString());
+            }
+        }
+
+        if (!found) {
+            System.out.println("  Warning: ticket not found in storage — no changes written.");
+            return;
+        }
+
+        new Ticket().writeAllTickets(updatedLines);
+    }
+
+    // Null-safe string equality helper
+    private boolean equals(String a, String b) {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+        return a.equals(b);
+    }
+
+    // ---------------------------------------------------------------
+    // SHARED TABLE PRINTER
+    // Used by viewSubmittedTicket, viewTicketHistory, searchTicket
+    // ---------------------------------------------------------------
+    public void printTicketTable(String title, List<Ticket> tickets) {
+        System.out.println("\n  [ " + title + " ]");
+        System.out.println("  +---------------+---------------------+----------+------------------+--------------+");
+        System.out.printf("  | %-13s | %-19s | %-8s | %-16s | %-12s |%n",
+                "Customer ID", "Status", "Priority", "Technician", "Date");
+        System.out.println("  +---------------+---------------------+----------+------------------+--------------+");
+
+        for (Ticket t : tickets) {
+            String priority = t.getPriorityLevel() != null ? t.getPriorityLevel() : "-";
+            String coloured;
+            if (priority.equalsIgnoreCase("HIGH")) {
+                coloured = RED    + String.format("%-8s", priority) + RESET;
+            } else if (priority.equalsIgnoreCase("MEDIUM")) {
+                coloured = YELLOW + String.format("%-8s", priority) + RESET;
+            } else {
+                coloured = GREEN  + String.format("%-8s", priority) + RESET;
+            }
+
+            System.out.printf("  | %-13s | %-19s | %s | %-16s | %-12s |%n",
+                    nvl(t.getCustomerID()),
+                    nvl(t.getTicketStatus()),
+                    coloured,
+                    nvl(t.getTechnician()),
+                    nvl(t.getDate()));
+        }
+        System.out.println("  +---------------+---------------------+----------+------------------+--------------+\n");
+    }
+
+    // Returns "-" for null values so the table never shows "null"
+    private String nvl(String value) {
+        return value != null ? value : "-";
     }
 }
