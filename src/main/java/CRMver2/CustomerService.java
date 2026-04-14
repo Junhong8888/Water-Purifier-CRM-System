@@ -121,53 +121,56 @@ public class CustomerService {
         
         System.out.println("\n[SUCCESS] Customer Registration Successful! You may now login.");
     }
-    
-    public void customerProfileMenu(Customer loggedInCustomer) throws IOException {
+
+    // ── Customer Dashboard Menu ────────────────────────────────────────────────
+    public void customerProfileMenu(Customer loggedIn) throws IOException {
         Scanner sc = new Scanner(System.in);
+        TicketService ts = new TicketService();
         boolean exit = false;
 
         do {
-            System.out.println("\n=== Customer Dashboard ===");
-            System.out.println("1. Update Purifier Model");
-            System.out.println("2. Update Installation Date");
-            System.out.println("3. Logout");
+            System.out.println("\n=== Customer Dashboard — Welcome, " + loggedIn.getUsername() + " ===");
+            System.out.println("1. Submit Service Request");
+            System.out.println("2. Track My Tickets");
+            System.out.println("3. Close Ticket & Give Feedback");
+            System.out.println("4. Update Purifier Model");
+            System.out.println("5. Update Installation Date");
+            System.out.println("6. Logout");
             System.out.print("Choice: ");
-            
-            // ANTI-CRASH: Changed to String choice
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1" -> {
+                case "1" -> ts.submitTicket(loggedIn.getUsername());
+                case "2" -> ts.trackTicketStatus(loggedIn.getUsername());
+                case "3" -> ts.closeTicketAndFeedback(loggedIn.getUsername());
+                case "4" -> {
                     String newModel;
                     while (true) {
-                        System.out.print("Enter new Purifier Model (Alkaline / RO System / Mineral): ");
+                        System.out.print("New Model (Alkaline / RO System / Mineral): ");
                         newModel = sc.nextLine().trim();
-                        if (newModel.equalsIgnoreCase("Alkaline") || newModel.equalsIgnoreCase("RO System") || newModel.equalsIgnoreCase("Mineral")) {
-                            break;
-                        }
-                        System.out.println("[ERROR] Invalid Model! Please enter Alkaline, RO System, or Mineral.");
+                        if (newModel.equalsIgnoreCase("Alkaline") ||
+                                newModel.equalsIgnoreCase("RO System") ||
+                                newModel.equalsIgnoreCase("Mineral")) break;
+                        System.out.println("[ERROR] Invalid model.");
                     }
-                    loggedInCustomer.setPurifierModel(newModel);
-                    updateCustomerFile(loggedInCustomer);
-                    System.out.println("[SUCCESS] Model Updated Successfully!");
+                    loggedIn.setPurifierModel(newModel);
+                    updateCustomerFile(loggedIn);
+                    System.out.println("[SUCCESS] Model updated!");
                 }
-                case "2" -> {
-                    // STRICT DATE FORMAT VALIDATION
+                case "5" -> {
                     String newDate;
                     while (true) {
-                        System.out.print("Enter new Installation Date (DD-MM-YYYY): ");
+                        System.out.print("New Installation Date (DD-MM-YYYY): ");
                         newDate = sc.nextLine().trim();
-                        if (newDate.matches("\\d{2}-\\d{2}-\\d{4}")) {
-                            break;
-                        }
-                        System.out.println("[ERROR] Invalid format! Please use DD-MM-YYYY (e.g., 15-05-2026).");
+                        if (newDate.matches("\\d{2}-\\d{2}-\\d{4}")) break;
+                        System.out.println("[ERROR] Use DD-MM-YYYY format.");
                     }
-                    loggedInCustomer.setInstallationDate(newDate);
-                    updateCustomerFile(loggedInCustomer);
-                    System.out.println("[SUCCESS] Date Updated Successfully!");
+                    loggedIn.setInstallationDate(newDate);
+                    updateCustomerFile(loggedIn);
+                    System.out.println("[SUCCESS] Date updated!");
                 }
-                case "3" -> exit = true;
-                default -> System.out.println("[ERROR] Invalid Choice. Please enter 1, 2, or 3.");
+                case "6" -> exit = true;
+                default  -> System.out.println("[ERROR] Enter 1-6.");
             }
         } while (!exit);
     }
