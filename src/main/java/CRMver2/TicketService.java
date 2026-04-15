@@ -89,22 +89,31 @@ public class TicketService {
 
         System.out.println("Category: 1. Filter Replacement  2. Leaking Repair  3. General Maintenance");
         System.out.print("Choose (1-3): ");
-        String description;
-        switch (sc.nextLine().trim()) {
-            case "1" -> description = "Filter Replacement";
-            case "2" -> description = "Leaking Repair";
-            case "3" -> description = "General Maintenance";
-            default  -> description = "General Service";
-        }
+        String description = switch (sc.nextLine().trim()) {
+            case "1" -> "Filter Replacement";
+            case "2" -> "Leaking Repair";
+            case "3" -> "General Maintenance";
+            default  -> "General Service";
+        };
 
         System.out.print("Priority (Low / Medium / High): ");
-        String priority = sc.nextLine().trim().toUpperCase();
+        String priority = sc.nextLine().trim();
         System.out.print("Additional details: ");
         String content = sc.nextLine().trim();
 
-        Ticket t = new Ticket(null, customerId, STATUS_PENDING, priority,
-                "Not Assigned", java.time.LocalDate.now().toString(),
-                null, description, content, null);
+        // FIX: Remove the first 'null' argument so it uses the 9-parameter constructor
+        Ticket t = new Ticket(
+                customerId,
+                "Pending",
+                priority,
+                "Not Assigned",
+                java.time.LocalDate.now().toString(),
+                "null",        // resolveTime
+                description,
+                content,
+                "null"         // response
+        );
+
         t.writeFile(t.toString());
         System.out.println("[SUCCESS] Ticket submitted! ID: " + t.getId());
     }
@@ -254,29 +263,23 @@ public class TicketService {
     }
 
     public ArrayList<Ticket> loadTicketToList() throws IOException {
-        ArrayList<Ticket> tickets = new ArrayList<>();
-        String path = System.getProperty("user.dir") + File.separator + "ticket.txt";
-        File file = new File(path);
-
-        if (!file.exists()) return tickets;
+        ArrayList<Ticket> list = new ArrayList<>();
+        File file = new File("C:\\crmSystem\\ticket.txt");
+        if (!file.exists()) return list;
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",", -1);
-                if (parts.length < 9) continue;
-
-                for (int i = 0; i < parts.length; i++) {
-                    if (parts[i].equalsIgnoreCase("null") || parts[i].isBlank()) {
-                        parts[i] = null;
-                    }
+                String[] p = line.split(",", -1);
+                if (p.length >= 10) {
+                    // USE THE RESTORATION CONSTRUCTOR HERE
+                    // This keeps the ID from the file and doesn't touch the 'count'
+                    Ticket t = new Ticket(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9]);
+                    list.add(t);
                 }
-                tickets.add(new Ticket(parts[0], parts[1], parts[2], parts[3], parts[4],
-                        parts[5], parts[6], parts[7], parts[8]));
             }
         }
-        Collections.sort(tickets);
-        return tickets;
+        return list;
     }
 
     public void persistTicketChange(Ticket updated) throws IOException {

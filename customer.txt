@@ -2,3 +2,4 @@ C1,junhong,junhong,junhong8888@gmail.com,0182283932,No27,Alkaline,01-01-2026
 C2,low,lowjh88,lowjh88@gmail.com,0182283932,ss1/32,alkaline,01-01-2026
 C3,lowjhl,lowjh8,low@gmail.com,018,ss2,Mineral,01-01-2026
 C4,ben,ben10o,ben@gmail.com,018,dd2,mineral,01-01-2026
+C5,lowjhy,lowjhy,low@gmail.com,018,ss2,Mineral,01-01-2026
