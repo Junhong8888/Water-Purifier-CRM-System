@@ -1,343 +1,197 @@
 package CRMver2;
 
-import java.io.*;
-import java.util.*;
+
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * TicketService — LOGIC LAYER
+ * Responsibility: Business logic only.
+ * NO Scanner, NO System.out, NO direct file I/O.
+ * Calls TicketRepository for all storage needs.
+ * Returns results to TicketMenu for display.
+ */
 public class TicketService {
+
     public static final String STATUS_PENDING   = "Pending";
     public static final String STATUS_COMPLETED = "Completed";
     public static final String STATUS_ASSIGNED  = "Technician Assigned";
-    public static final String RESET = "\u001B[0m";
-    public static final String RED = "\u001B[31m";
-    public static final String GREEN = "\u001B[32m";
-    public static final String YELLOW = "\u001B[33m";
+
+    private final TicketRepository repo = new TicketRepository();
 
     public TicketService() {}
 
-    // ============================================
-    // CORE FUNCTIONALITY & VIEW METHODS
-    // ============================================
+    // ================================================================
+    // MODULE 2 — Customer Ticket Operations
+    // ================================================================
 
-    public void viewSubmittedTicket() throws IOException {
-        ArrayList<Ticket> tickets = loadTicketToList()
-                .stream()
-                .filter(t -> !t.getTicketStatus().equalsIgnoreCase("Completed"))
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        if (tickets.isEmpty()) {
-            System.out.println("\n  No active tickets found.\n");
-            return;
-        }
-
-        printTicketTable("ACTIVE TICKETS", tickets);
-    }
-
-    public void viewTicketHistory() throws IOException {
-        ArrayList<Ticket> tickets = loadTicketToList()
-                .stream()
-                .filter(t -> t.getTicketStatus().equalsIgnoreCase("Completed"))
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        if (tickets.isEmpty()) {
-            System.out.println("\n  No completed tickets found.\n");
-            return;
-        }
-
-        printTicketTable("TICKET HISTORY (Completed)", tickets);
-    }
-
-    public void searchTicket() throws IOException {
-        Scanner sc = new Scanner(System.in);
-        System.out.print("  Enter keyword to search: ");
-        String keyword = sc.nextLine().trim();
-
-        if (keyword.isEmpty()) {
-            System.out.println("  Keyword cannot be empty.");
-            return;
-        }
-
-        ArrayList<Ticket> results = loadTicketToList()
-                .stream()
-                .filter(t -> matchesKeyword(t, keyword))
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        if (results.isEmpty()) {
-            System.out.println("  No tickets found matching: \"" + keyword + "\"\n");
-        } else {
-            printTicketTable("SEARCH RESULTS", results);
-        }
-    }
-
-    private boolean matchesKeyword(Ticket t, String keyword) {
-        String k = keyword.toLowerCase();
-        return (t.getCustomerID()    != null && t.getCustomerID().toLowerCase().contains(k))
-                || (t.getTicketStatus()  != null && t.getTicketStatus().toLowerCase().contains(k))
-                || (t.getPriorityLevel() != null && t.getPriorityLevel().toLowerCase().contains(k))
-                || (t.getTechnician()    != null && t.getTechnician().toLowerCase().contains(k))
-                || (t.getDescription()   != null && t.getDescription().toLowerCase().contains(k));
-    }
-
-    // ============================================
-    // MODULE 2: Service Request (Ticket) Management
-    // ============================================
-
-    /** Customer submits a new service request. */
-    public void submitTicket(String customerId) throws IOException {
-        System.out.println("\n--- [Module 2] Submit Service Request ---");
-        Scanner sc = new Scanner(System.in);
-
-        System.out.println("Category: 1. Filter Replacement  2. Leaking Repair  3. General Maintenance");
-        System.out.print("Choose (1-3): ");
-        String description = switch (sc.nextLine().trim()) {
-            case "1" -> "Filter Replacement";
-            case "2" -> "Leaking Repair";
-            case "3" -> "General Maintenance";
-            default  -> "General Service";
-        };
-
-        System.out.print("Priority (Low / Medium / High): ");
-        String priority = sc.nextLine().trim();
-        System.out.print("Additional details: ");
-        String content = sc.nextLine().trim();
-
-        // FIX: Remove the first 'null' argument so it uses the 9-parameter constructor
+    /**
+     * Creates and saves a new ticket.
+     * FIX 1: now calls repo.append(t) instead of t.writeFile()
+     * so ALL file access stays inside the Repository layer.
+     * Returns the created Ticket so TicketMenu can show its ID.
+     */
+    public Ticket submitTicket(String customerId, String priority,
+                                       String description, String content) throws IOException {
         Ticket t = new Ticket(
                 customerId,
-                "Pending",
-                priority,
+                STATUS_PENDING,
+                priority.toUpperCase(),
                 "Not Assigned",
                 java.time.LocalDate.now().toString(),
-                "null",        // resolveTime
+                null,
                 description,
                 content,
-                "null"         // response
+                null
         );
-
-        t.writeFile(t.toString());
-        System.out.println("[SUCCESS] Ticket submitted! ID: " + t.getId());
+        repo.append(t); // FIX: was t.writeFile(t.toString()) — now fully through Repository
+        return t;
     }
 
-    /** Customer tracks their own tickets. */
-    public void trackTicketStatus(String customerId) throws IOException {
-        System.out.println("\n--- [Module 2] Track My Tickets ---");
-        ArrayList<Ticket> tickets = loadTicketToList();
-        boolean found = false;
-        printTableHeader();
-        for (Ticket t : tickets) {
-            if (t.getCustomerID() != null && t.getCustomerID().equalsIgnoreCase(customerId)) {
-                printRow(t);
-                found = true;
+    /** Returns all tickets belonging to a specific customer. */
+    public ArrayList<Ticket> getTicketsByCustomer(String customerId) throws IOException {
+        ArrayList<Ticket> result = new ArrayList<>();
+        for (Ticket t : repo.loadAll()) {
+            if (t.getCustomerID() != null
+                    && t.getCustomerID().equalsIgnoreCase(customerId)) {
+                result.add(t);
             }
         }
-        printTableFooter();
-        if (!found) System.out.println("No tickets found for: " + customerId);
+        return result;
     }
 
-    /** Customer closes ticket and gives feedback. */
-    public void closeTicketAndFeedback(String customerId) throws IOException {
-        System.out.println("\n--- [Module 2] Close Ticket & Give Feedback ---");
-        ArrayList<Ticket> tickets = loadTicketToList();
-        Scanner sc = new Scanner(System.in);
-        boolean found = false;
-
-        for (Ticket t : tickets) {
+    /**
+     * Closes a customer's active ticket and saves their feedback rating.
+     * Returns true if a ticket was found and closed.
+     */
+    public boolean closeTicketAndFeedback(String customerId, String rating) throws IOException {
+        ArrayList<Ticket> all = repo.loadAll();
+        for (Ticket t : all) {
             if (t.getCustomerID() != null
                     && t.getCustomerID().equalsIgnoreCase(customerId)
                     && !STATUS_COMPLETED.equalsIgnoreCase(t.getTicketStatus())) {
                 t.setTicketStatus(STATUS_COMPLETED);
                 t.setResolveTime(java.time.LocalDate.now().toString());
-                System.out.print("Rate the technician (1-5 stars): ");
-                t.setResponse("Customer Rating: " + sc.nextLine().trim() + " stars");
-                System.out.println("[SUCCESS] Ticket closed. Thank you for your feedback!");
-                found = true;
-                break;
+                t.setResponse("Customer Rating: " + rating + " stars");
+                repo.saveAll(all);
+                return true;
             }
         }
-        if (!found) System.out.println("[ERROR] No active ticket found for your account.");
-        rewriteAllTickets(tickets);
+        return false;
     }
 
-    /** Staff creates a ticket manually. */
-    public void createTicket() throws IOException {
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Enter Customer ID  : ");
-        String customerID = sc.nextLine().trim();
-        System.out.print("Priority (Low/Medium/High): ");
-        String priority = sc.nextLine().trim().toUpperCase();
-        System.out.print("Enter Description  : ");
-        String description = sc.nextLine().trim();
+    // ================================================================
+    // MODULE 3 — Staff Operations
+    // ================================================================
 
-        Ticket t = new Ticket(null, customerID, STATUS_PENDING, priority,
-                "Not Assigned", java.time.LocalDate.now().toString(),
-                null, description, null, null);
-        t.writeFile(t.toString());
-        System.out.println("[SUCCESS] Ticket created! ID: " + t.getId());
+    /** Returns all tickets that are NOT completed (active tickets). */
+    public ArrayList<Ticket> getActiveTickets() throws IOException {
+        return repo.loadAll().stream()
+                .filter(t -> !STATUS_COMPLETED.equalsIgnoreCase(t.getTicketStatus()))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // Display helpers
-    // ──────────────────────────────────────────────────────────────────────────
-    private void printTableHeader() {
-        System.out.println("|====================================================================================================|");
-        System.out.printf("|%-8s %-14s %-22s %-12s %-18s %-12s|%n",
-                "ID", "Customer", "Ticket Status", "Priority", "Technician", "Date");
-        System.out.println("|====================================================================================================|");
-    }
-
-    private void printTableFooter() {
-        System.out.println("|====================================================================================================|\n");
-    }
-
-    private void printRow(Ticket t) {
-        String pri = t.getPriorityLevel() != null ? t.getPriorityLevel() : "";
-        if ("HIGH".equalsIgnoreCase(pri)) {
-            System.out.printf("|%-8s %-14s %-22s " + RED + "%-12s" + RESET + " %-18s %-12s|%n",
-                    t.getId(), t.getCustomerID(), t.getTicketStatus(),
-                    pri, t.getTechnician(), t.getDate());
-        } else {
-            System.out.printf("|%-8s %-14s %-22s %-12s %-18s %-12s|%n",
-                    t.getId(), t.getCustomerID(), t.getTicketStatus(),
-                    pri, t.getTechnician(), t.getDate());
-        }
-    }
-
-    // ============================================
-    // MODULE 3: Staff Operations & Tech Dispatch
-    // ============================================
-
-    public void assignTechnician() throws IOException {
-        Scanner sc = new Scanner(System.in);
-        ArrayList<Ticket> tickets = loadTicketToList();
-
-        System.out.print("Enter Customer ID of the ticket to assign: ");
-        String cid = sc.nextLine();
-
-        Ticket target = tickets.stream()
-                .filter(t -> t.getCustomerID().equalsIgnoreCase(cid) && !t.getTicketStatus().equalsIgnoreCase("Completed"))
-                .findFirst().orElse(null);
-
-        if (target != null) {
-            System.out.print("Enter Technician ID: ");
-            String tech = sc.nextLine();
-            target.setTechnician(tech);
-            target.setTicketStatus("Technician Assigned");
-            persistTicketChange(target);
-            System.out.println("  ✓ Technician assigned successfully.");
-        } else {
-            System.out.println("  Ticket not found or already completed.");
-        }
-    }
-
-    public void updateTicketStatus(Ticket ticket) throws IOException {
-        if (ticket == null) return;
-
-        Map<String, String> transitions = new LinkedHashMap<>();
-        transitions.put("pending",             "Technician Assigned");
-        transitions.put("technician assigned", "Completed");
-
-        String current = ticket.getTicketStatus().toLowerCase();
-        String next = transitions.get(current);
-
-        if (next != null) {
-            ticket.setTicketStatus(next);
-            persistTicketChange(ticket);
-            System.out.printf("  Status updated to [%s]%n", next);
-        } else {
-            System.out.println("  Ticket is already in a terminal state.");
-        }
-    }
-
-    // ============================================
-    // DATA PERSISTENCE & LOADING
-    // ============================================
-    public void rewriteAllTickets(ArrayList<Ticket> tickets) throws IOException {
-        String path = System.getProperty("user.dir");
-        File file = new File(path + File.separator + "ticket.txt");
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, false))) {
-            for (Ticket t : tickets) {
-                bw.write(t.toString());
-                bw.newLine();
-            }
-        }
-    }
-
-    public ArrayList<Ticket> loadTicketToList() throws IOException {
-        ArrayList<Ticket> list = new ArrayList<>();
-        File file = new File("C:\\crmSystem\\ticket.txt");
-        if (!file.exists()) return list;
-
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] p = line.split(",", -1);
-                if (p.length >= 10) {
-                    // USE THE RESTORATION CONSTRUCTOR HERE
-                    // This keeps the ID from the file and doesn't touch the 'count'
-                    Ticket t = new Ticket(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9]);
-                    list.add(t);
-                }
-            }
-        }
-        return list;
-    }
-
-    public void persistTicketChange(Ticket updated) throws IOException {
-        ArrayList<Ticket> all = loadTicketToList();
-        List<String> updatedLines = new ArrayList<>();
-        boolean found = false;
-
+    /**
+     * FIX 2: now takes ticketId (not customerId).
+     * Unambiguous — one ticket ID maps to exactly one ticket,
+     * so same-customer/multiple-ticket scenario is fully handled.
+     * Returns the updated Ticket, or null if not found.
+     */
+    public Ticket assignTechnician(String ticketId, String technicianUsername) throws IOException {
+        ArrayList<Ticket> all = repo.loadAll();
         for (Ticket t : all) {
-            if (!found && equals(t.getCustomerID(), updated.getCustomerID()) &&
-                    equals(t.getDate(), updated.getDate())) {
-                updatedLines.add(updated.toString());
-                found = true;
-            } else {
-                updatedLines.add(t.toString());
+            if (t.getId() != null
+                    && t.getId().equalsIgnoreCase(ticketId)
+                    && !STATUS_COMPLETED.equalsIgnoreCase(t.getTicketStatus())) {
+                t.setTechnician(technicianUsername);
+                t.setTicketStatus(STATUS_ASSIGNED);
+                repo.saveAll(all);
+                return t;
             }
         }
-        new Ticket().writeAllTickets(updatedLines);
+        return null;
     }
 
-    private boolean equals(String a, String b) {
-        return Objects.equals(a, b);
-    }
-
-    public void printTicketTable(String title, List<Ticket> tickets) {
-        System.out.println("\n  [ " + title + " ]");
-        System.out.println("  +---------------+---------------------+----------+------------------+--------------+");
-        System.out.printf("  | %-13s | %-19s | %-8s | %-16s | %-12s |%n",
-                "Customer ID", "Status", "Priority", "Technician", "Date");
-        System.out.println("  +---------------+---------------------+----------+------------------+--------------+");
-
-        for (Ticket t : tickets) {
-            String priority = t.getPriorityLevel() != null ? t.getPriorityLevel() : "-";
-            String color = priority.equalsIgnoreCase("HIGH") ? RED :
-                    priority.equalsIgnoreCase("MEDIUM") ? YELLOW : GREEN;
-
-            System.out.printf("  | %-13s | %-19s | %s | %-16s | %-12s |%n",
-                    nvl(t.getCustomerID()), nvl(t.getTicketStatus()),
-                    color + String.format("%-8s", priority) + RESET,
-                    nvl(t.getTechnician()), nvl(t.getDate()));
+    /**
+     * Updates status and/or response notes on a specific ticket by ticket ID.
+     * Returns true if ticket was found and updated.
+     */
+    public boolean updateTicketResponse(String ticketId, String newStatus,
+                                        String notes) throws IOException {
+        ArrayList<Ticket> all = repo.loadAll();
+        for (Ticket t : all) {
+            if (t.getId() != null && t.getId().equalsIgnoreCase(ticketId)) {
+                if (newStatus != null && !newStatus.isEmpty()) t.setTicketStatus(newStatus);
+                if (notes     != null && !notes.isEmpty())     t.setResponse(notes);
+                repo.saveAll(all);
+                return true;
+            }
         }
-        System.out.println("  +---------------+---------------------+----------+------------------+--------------+\n");
+        return false;
     }
 
-    private String nvl(String value) {
-        return value != null ? value : "-";
+    /**
+     * Searches tickets by keyword across all fields.
+     * Returns matching tickets — TicketMenu displays them.
+     */
+    public ArrayList<Ticket> searchTickets(String keyword) throws IOException {
+        String k = keyword.toLowerCase();
+        return repo.loadAll().stream()
+                .filter(t ->
+                        (t.getCustomerID()    != null && t.getCustomerID().toLowerCase().contains(k))
+                                || (t.getTicketStatus()  != null && t.getTicketStatus().toLowerCase().contains(k))
+                                || (t.getPriorityLevel() != null && t.getPriorityLevel().toLowerCase().contains(k))
+                                || (t.getTechnician()    != null && t.getTechnician().toLowerCase().contains(k))
+                                || (t.getDescription()   != null && t.getDescription().toLowerCase().contains(k)))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    public void updateResponse() {
-        System.out.println("Updating ticket response...");
+    // ================================================================
+    // MODULE 4 — History & Analytics
+    // ================================================================
+
+    /** Returns all completed tickets. */
+    public ArrayList<Ticket> getCompletedTickets() throws IOException {
+        return repo.loadAll().stream()
+                .filter(t -> STATUS_COMPLETED.equalsIgnoreCase(t.getTicketStatus()))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    public void searchAndFilter() {
-        System.out.println("");
+    /**
+     * Computes analytics and returns a ReportData object.
+     * TicketMenu is responsible for displaying the data.
+     */
+    public ReportData generateReport() throws IOException {
+        ArrayList<Ticket> all = repo.loadAll();
+        ReportData data = new ReportData();
+        data.total    = all.size();
+        data.resolved = all.stream().filter(t -> STATUS_COMPLETED.equalsIgnoreCase(t.getTicketStatus())).count();
+        data.pending  = all.stream().filter(t -> STATUS_PENDING.equalsIgnoreCase(t.getTicketStatus())).count();
+        data.assigned = all.stream().filter(t -> STATUS_ASSIGNED.equalsIgnoreCase(t.getTicketStatus())).count();
+        data.highPri  = all.stream().filter(t -> "HIGH".equalsIgnoreCase(t.getPriorityLevel())).count();
+        data.medPri   = all.stream().filter(t -> "MEDIUM".equalsIgnoreCase(t.getPriorityLevel())).count();
+        data.lowPri   = all.stream().filter(t -> "LOW".equalsIgnoreCase(t.getPriorityLevel())).count();
+        data.jobsPerTechnician = all.stream()
+                .filter(t -> STATUS_COMPLETED.equalsIgnoreCase(t.getTicketStatus()))
+                .collect(Collectors.groupingBy(
+                        t -> t.getTechnician() != null ? t.getTechnician() : "Unassigned",
+                        Collectors.counting()));
+        return data;
     }
 
-    public void viewMaintenanceHistory() {
+    /** Exposed for Staff.countAssignedTickets() compatibility. */
+    public ArrayList<Ticket> loadTicketToList() throws IOException {
+        return repo.loadAll();
     }
 
-    public void generateMonthlyReport() {
+    // ================================================================
+    // Inner class: Report data container (no display logic here)
+    // ================================================================
+    public static class ReportData {
+        public long total, resolved, pending, assigned, highPri, medPri, lowPri;
+        public Map<String, Long> jobsPerTechnician;
     }
 }

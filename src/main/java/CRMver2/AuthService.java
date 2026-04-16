@@ -26,6 +26,7 @@ public class AuthService {
             // 1. Check Staff / Manager / Technician Logins
             if (!expectedRole.equalsIgnoreCase("Customer")) {
                 StaffService ss = new StaffService();
+                StaffMenu staffMenu = new StaffMenu();
                 for (Staff s : Staff.staffList) {
                     if (s.getUsername().equalsIgnoreCase(username) && s.getPassword().equals(password)) {
                         credentialsMatched = true;
@@ -33,7 +34,7 @@ public class AuthService {
                         // Enforce Section-Based Login
                         if (s.getRole().equalsIgnoreCase(expectedRole)) {
                             System.out.println("\n[SUCCESS] Welcome " + s.getRole() + ": " + s.getUsername());
-                            ss.staffOperationMenu();
+                            staffMenu.staffOperationMenu();
                             return; 
                         } else {
                             System.out.println("\n[ERROR] Role mismatch! You are registered as a " + s.getRole() + ".");

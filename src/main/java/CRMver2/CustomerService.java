@@ -126,6 +126,7 @@ public class CustomerService {
     public void customerProfileMenu(Customer loggedIn) throws IOException {
         Scanner sc = new Scanner(System.in);
         TicketService ts = new TicketService();
+        TicketMenu tm = new TicketMenu();
         boolean exit = false;
 
         do {
@@ -140,9 +141,9 @@ public class CustomerService {
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1" -> ts.submitTicket(loggedIn.getUsername());
-                case "2" -> ts.trackTicketStatus(loggedIn.getUsername());
-                case "3" -> ts.closeTicketAndFeedback(loggedIn.getUsername());
+                case "1" -> tm.showSubmitTicket(loggedIn.getId());
+                case "2" -> tm.showTrackTicketStatus(loggedIn.getId());
+                case "3" -> tm.showCloseTicketAndFeedback(loggedIn.getId());
                 case "4" -> {
                     String newModel;
                     while (true) {

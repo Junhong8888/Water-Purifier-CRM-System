@@ -60,14 +60,14 @@ public class MainMenu {
     }
 
     private static void handleRegistration(String roleChoice) throws IOException {
-        StaffService ss = new StaffService();
+        /*StaffService ss = new StaffService();
         switch (roleChoice) {
             case "1" -> new CustomerService().registerCustomer();
             case "2" -> ss.registerStaff("Staff");
             case "3" -> ss.registerStaff("Manager");
             case "4" -> ss.registerStaff("Technician");
             default -> System.out.println("[ERROR] Invalid Role Choice.");
-        }
+        }*/
     }
 
     private static void handleLogin(String roleChoice) throws IOException {
@@ -129,7 +129,7 @@ public class MainMenu {
         // --- DATA SYNCHRONIZATION (CRITICAL) ---
 
         // 1. Sync the Staff List so AuthService has access to the seeded accounts
-        Staff.staffList = new StaffService().loadStaffToList();
+        Staff.staffList = new StaffRepository().loadStaffToList();
 
         // 2. Initialize Ticket ID counter based on existing file content
         // This ensures the next ticket is 't4' instead of 't1'

@@ -8,8 +8,8 @@ public class TechniqianRegister {
 
     public void register() throws IOException {
         Scanner sc = new Scanner(System.in);
-        StaffService staffService = new StaffService();
-        ArrayList<Staff> currentStaff = staffService.loadStaffToList();
+        StaffRepository staffRepository = new StaffRepository();
+        ArrayList<Staff> currentStaff = staffRepository.loadStaffToList();
 
         System.out.println("\n--- Technician Registration ---");
 
@@ -56,7 +56,7 @@ public class TechniqianRegister {
 
         Staff newTech = new Staff("temp", username, password, "Technician", salary);
         newTech.assignID(); 
-        newTech.writeFile(newTech.toString());
+        new StaffRepository().writeFile(newTech.toString());
 
         System.out.println("\n[SUCCESS] Technician registered successfully! You may now login.");
     }
