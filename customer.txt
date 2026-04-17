@@ -3,3 +3,7 @@ C2,low,lowjh88,lowjh88@gmail.com,0182283932,ss1/32,alkaline,01-01-2026
 C3,lowjhl,lowjh8,low@gmail.com,018,ss2,Mineral,01-01-2026
 C4,ben,ben10o,ben@gmail.com,018,dd2,mineral,01-01-2026
 C5,lowjhy,lowjhy,low@gmail.com,018,ss2,Mineral,01-01-2026
+C6,lowjh,lowjh98,low@gmail.com,0192,ss3,Alkaline,01-01-2026
+C7,lowjunhong,lowjunhong,low@gmail.com,019,ss9,RO System,01-01-2026
+C8,jlow,jlow123,low@gmail.com,0182283932,ss1,Alkaline,01-01-2026
+C9,lowjhk,low8888,low@gmail.com,12,low,Alkaline,01-01-2026

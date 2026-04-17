@@ -219,10 +219,9 @@ public class TicketService {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    /**
+    /*
      * Computes analytics and returns a ReportData object.
-     * TicketMenu is responsible for displaying the data.
-     */
+     * TicketMenu is responsible for displaying the data. */
     public ReportData generateReport() throws IOException {
         ArrayList<Ticket> all = repo.loadAll();
         ReportData data = new ReportData();
@@ -241,7 +240,7 @@ public class TicketService {
         return data;
     }
 
-    /** Exposed for Staff.countAssignedTickets() compatibility. */
+    /* Exposed for Staff.countAssignedTickets() compatibility. */
     public ArrayList<Ticket> loadTicketToList() throws IOException {
         return repo.loadAll();
     }

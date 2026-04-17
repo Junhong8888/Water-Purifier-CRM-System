@@ -4,12 +4,10 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class StaffMenu implements DashBoardService<Staff> {
-    private final TicketService ticketService;
     private final TicketMenu ticketMenu;
 
     public StaffMenu() {
         this.ticketMenu = new TicketMenu();
-        this.ticketService = new TicketService();
     }
 
     /**
@@ -42,8 +40,10 @@ public class StaffMenu implements DashBoardService<Staff> {
                 case "2" -> ticketMenu.showUpdateResponse();
                 case "3" -> ticketMenu.showSearchAndFilter();
                 case "4" -> ticketMenu.showAssignTechnician();
-                case "5" -> ticketMenu.showMaintenanceHistory();
-                case "6" -> ticketMenu.showMonthlyReport();
+                case "5" -> //new MaintenanceHistoryReport().generateReport();//ticketMenu.showMaintenanceHistory();
+                        System.out.println("Report");
+
+                case "6" -> new MonthlyPerformanceReport().generateReport(new TicketService().loadTicketToList());//ticketMenu.showMonthlyReport();
                 case "7" -> System.out.println("  Logging out...");
                 default -> System.out.println("  [ERROR] Invalid choice. Please enter 1-7.");
             }

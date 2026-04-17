@@ -19,7 +19,7 @@ public class TicketMenu {
     public static final String GREEN  = "\u001B[32m";
     public static final String YELLOW = "\u001B[33m";
 
-    private final TicketService service = new TicketService();
+   private final TicketService service =  new TicketService();
 
     public TicketMenu() {}
 

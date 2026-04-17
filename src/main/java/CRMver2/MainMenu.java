@@ -3,6 +3,7 @@ package CRMver2;
 import CRMver2.Staff;
 import CRMver2.Ticket;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -15,6 +16,15 @@ public class MainMenu {
     public static void startCRMSystem() throws IOException {
         // 1. Setup files, seed data, and sync static lists/counters
         initializeSystemResources();
+
+        User myCustomer = new Customer();
+        User myAdmin = new Manager();
+        User myTechnician = new Technician();
+        List<RegistrationService> services = new ArrayList<>();
+
+        services.add(new CustomerService());
+        services.add(new ManagerService());
+        services.add(new TechnicianService());
 
         Scanner sc = new Scanner(System.in);
 
@@ -41,7 +51,14 @@ public class MainMenu {
                 System.out.println("1. Customer\n2. Staff\n3. Manager\n4. Technician");
                 System.out.print("Choice: ");
                 String regChoice = sc.nextLine().trim();
-                handleRegistration(regChoice);
+                //handleRegistration(regChoice);
+                if (regChoice.equals("1")) {
+                    services.get(0).register(myCustomer);
+                } else if (regChoice.equals("3")) {
+                    services.get(1).register(myAdmin);
+                } else if (regChoice.equals("4")) {
+                    services.get(2).register(myTechnician);
+                }
 
             } else if (choice.equals("2")) {
                 System.out.println("\nLogin to section:");
@@ -75,7 +92,7 @@ public class MainMenu {
         String role = "";
         switch (roleChoice) {
             case "1" -> role = "Customer";
-            case "2" -> role = "Staff";
+            //case "2" -> role = "Staff";
             case "3" -> role = "Manager";
             case "4" -> role = "Technician";
             default -> {

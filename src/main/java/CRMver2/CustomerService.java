@@ -23,7 +23,7 @@ public class CustomerService implements RegistrationService<Customer>,DashBoardS
             while ((line = br.readLine()) != null) {
                 String[] data = line.split(",");
                 if (data.length >= 8) {
-                    customerList.add(new Customer(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]));
+                    customerList.add(new Customer(data[0], data[1], data[2], data[3], data[4], new Address(), new WaterPurifier()));
                 }
             }
         }
@@ -43,9 +43,8 @@ public class CustomerService implements RegistrationService<Customer>,DashBoardS
             System.out.println("1. Submit Service Request");
             System.out.println("2. Track My Tickets");
             System.out.println("3. Close Ticket & Give Feedback");
-            System.out.println("4. Update Purifier Model");
-            System.out.println("5. Update Installation Date");
-            System.out.println("6. Logout");
+            System.out.println("4. Register Purifier Model");
+            System.out.println("5. Logout");
             System.out.print("Choice: ");
             String choice = sc.nextLine().trim();
 
@@ -71,23 +70,20 @@ public class CustomerService implements RegistrationService<Customer>,DashBoardS
                                 newModel.equalsIgnoreCase("Mineral")) break;
                         System.out.println("[ERROR] Invalid model.");
                     }
-                    loggedIn.setPurifierModel(newModel);
-                    updateCustomerFile(loggedIn);
-                    System.out.println("[SUCCESS] Model updated!");
-                }
-                case "5" -> {
+
                     String newDate;
                     while (true) {
                         System.out.print("New Installation Date (DD-MM-YYYY): ");
                         newDate = sc.nextLine().trim();
                         if (newDate.matches("\\d{2}-\\d{2}-\\d{4}")) break;
                         System.out.println("[ERROR] Use DD-MM-YYYY format.");
-                    }
-                    loggedIn.setInstallationDate(newDate);
-                    updateCustomerFile(loggedIn);
+                    };
+                    loggedIn.setPurifierModel(new WaterPurifier(newModel, newDate));
                     System.out.println("[SUCCESS] Date updated!");
+                    updateCustomerFile(loggedIn);
+                    System.out.println("[SUCCESS] Model updated!");
                 }
-                case "6" -> exit = true;
+                case "5" -> exit = true;
                 default  -> System.out.println("[ERROR] Enter 1-6.");
             }
         } while (!exit);
@@ -190,7 +186,7 @@ public class CustomerService implements RegistrationService<Customer>,DashBoardS
         }
 
         String newId = "C" + (customerList.size() + 1);
-        Customer newCust = new Customer(newId, username, password, email, contact, address, model, "01-01-2026");
+        Customer newCust = new Customer(newId, username, password, email, contact, new Address(address), new WaterPurifier(model,"01-01-2026"));
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter("customer.txt", true))) {
             bw.write(newCust.toString());

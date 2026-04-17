@@ -6,9 +6,7 @@ import java.util.Scanner;
 
 public class ManagerService implements RegistrationService<Manager> {
 
-    public void register() throws IOException {
 
-    }
 
     @Override
     public void register(Manager user) throws IOException {
@@ -59,11 +57,11 @@ public class ManagerService implements RegistrationService<Manager> {
             }
         }
 
-        user.assignID();
         user.setUsername(username);
         user.setPassword(password);
         user.setSalary(salary);
         user.setRole("Manager");
+        user.assignID();
 
         //Staff newManager = new Staff("temp", username, password, "Manager", salary);
 
