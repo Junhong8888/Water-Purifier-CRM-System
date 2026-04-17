@@ -90,23 +90,26 @@ public class TicketRepository implements FileStorage{
         }
     }
 
-    /**
-     * Update a single ticket matched by ticket ID.
-     * FIX: matches on t.getId() — never wrong-ticket update.
-     */
     public void update(Ticket updated) throws IOException {
+        // 1. Load the current state of the file
         ArrayList<Ticket> all = loadAll();
-        List<String> lines = new ArrayList<>();
-        boolean found = false;
 
-        for (Ticket t : all) {
-            if (!found && t.getId() != null && t.getId().equals(updated.getId())) {
-                lines.add(updated.toString());
+        // 2. Find and replace the specific ticket by ID
+        boolean found = false;
+        for (int i = 0; i < all.size(); i++) {
+            if (all.get(i).getId().equalsIgnoreCase(updated.getId())) {
+                all.set(i, updated); // Replace the old object with the modified one
                 found = true;
-            } else {
-                lines.add(t.toString());
+                break;
             }
         }
-        writeAllTickets(lines);
+
+        // 3. If found, overwrite the file with the NEW list
+        if (found) {
+            saveAll(all);
+        } else {
+            System.out.println("  [Warning] Update failed: Ticket ID " + updated.getId() + " not found.");
+        }
     }
+
 }

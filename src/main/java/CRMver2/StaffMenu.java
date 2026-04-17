@@ -1,10 +1,9 @@
 package CRMver2;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Scanner;
 
-public class StaffMenu {
+public class StaffMenu implements DashBoardService<Staff> {
     private final TicketService ticketService;
     private final TicketMenu ticketMenu;
 
@@ -17,7 +16,8 @@ public class StaffMenu {
      * Primary Dashboard for Staff, Managers, and Technicians.
      * Consolidates all Module 3 and Module 4 features.
      */
-    public void staffOperationMenu() throws IOException {
+    @Override
+    public void dashBoard(Staff user) throws IOException {
         Scanner sc = new Scanner(System.in);
         String choice;
 

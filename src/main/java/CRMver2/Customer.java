@@ -15,6 +15,7 @@ public class Customer extends User implements FileStorage {
     public Customer() {
     }
 
+
     public Customer(String id, String username, String password, String name, 
                     String contactNumber, String homeAddress, String purifierModel, String installationDate) {
         super(id, username, password);
@@ -50,6 +51,7 @@ public class Customer extends User implements FileStorage {
             bw.newLine();
         }
     }
+
 
     @Override
     public String toString() {

@@ -67,6 +67,10 @@ public class Staff extends User{
         counter++;
     }
 
+    public String getID() {
+        return getId() + counter;
+    }
+
     // ---------------------------------------------------------------
     // GETTERS & SETTERS
     // ---------------------------------------------------------------

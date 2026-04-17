@@ -10,7 +10,6 @@ import java.util.Scanner;
  * Responsibility: ALL user interaction for the ticket module.
  * Handles Scanner input and System.out display.
  * Calls TicketService for logic. Never touches files directly.
- *
  * Flow: TicketMenu → TicketService → TicketRepository → ticket.txt
  */
 public class TicketMenu {
@@ -29,7 +28,7 @@ public class TicketMenu {
     // ================================================================
 
     /** Asks customer for ticket details, calls service, shows result. */
-    public void showSubmitTicket(String customerId) throws IOException {
+    public String showSubmitTicket(String customerId) throws IOException {
         Scanner sc = new Scanner(System.in);
         System.out.println("\n--- [Module 2] Submit Service Request ---");
         System.out.println("  Category: 1. Filter Replacement  2. Leaking Repair  3. General Maintenance");
@@ -47,7 +46,11 @@ public class TicketMenu {
         String content = sc.nextLine().trim();
 
         Ticket created = service.submitTicket(customerId, priority, description, content);
+
+        service.makeBooking(created);
+
         System.out.println("  [SUCCESS] Ticket submitted! ID: " + created.getId());
+        return created.getId();
     }
 
     /** Shows all tickets belonging to the logged-in customer. */
@@ -59,14 +62,17 @@ public class TicketMenu {
             return;
         }
         printTableHeader();
-        for (Ticket t : tickets) printRow(t);
+        //for (Ticket t : tickets) printRow(t);
+        tickets.stream()
+                .filter(ticket -> (!ticket.getTicketStatus().equalsIgnoreCase("Completed")))
+                .forEach(ticket -> printRow(ticket));
         printTableFooter();
     }
 
     /** Customer closes a ticket and rates the technician. */
-    public void showCloseTicketAndFeedback(String customerId) throws IOException {
+    public void showCloseTicketAndFeedback(String ticketid, String customerId) throws IOException {
         Scanner sc = new Scanner(System.in);
-        System.out.println("\n--- [Module 2] Close Ticket & Give Feedback ---");
+        System.out.println("\n--- Close Ticket & Give Feedback ---");
 
         String rating = "";
         while (true) {
@@ -76,7 +82,7 @@ public class TicketMenu {
             System.out.println("  [ERROR] Enter a number between 1 and 5.");
         }
 
-        boolean success = service.closeTicketAndFeedback(customerId, rating);
+        boolean success = service.closeTicketAndFeedback(ticketid,customerId, rating);
         if (success) {
             System.out.println("  [SUCCESS] Ticket closed. Thank you for your feedback!");
         } else {
@@ -233,14 +239,14 @@ public class TicketMenu {
     }
 
     private void printTableHeader() {
-        System.out.println("  |====================================================================================================|");
+        System.out.println("  |===========================================================================================|");
         System.out.printf("  |%-8s %-14s %-22s %-12s %-18s %-12s|%n",
                 "ID", "Customer", "Status", "Priority", "Technician", "Date");
-        System.out.println("  |====================================================================================================|");
+        System.out.println("  |===========================================================================================|");
     }
 
     private void printTableFooter() {
-        System.out.println("  |====================================================================================================|\n");
+        System.out.println("  |===========================================================================================|\n");
     }
 
     private void printRow(Ticket t) {

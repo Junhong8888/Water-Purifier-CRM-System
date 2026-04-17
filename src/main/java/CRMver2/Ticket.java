@@ -1,6 +1,7 @@
 package CRMver2;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -154,7 +155,12 @@ public class Ticket implements Comparable<Ticket>{
 
     @Override
     public int compareTo(Ticket o) {
-        int i = compareNullSafe(this.getPriorityLevel(), o.getPriorityLevel());
+        HashMap<String,Integer> map = new HashMap<>();
+        map.put("HIGH", 1);
+        map.put("MEDIUM", 2);
+        map.put("LOW", 3);
+
+        int i = map.get(this.getPriorityLevel()) - map.get(o.getPriorityLevel());
         if (i == 0) i = compareNullSafe(this.date, o.date);
         return i;
     }
@@ -165,4 +171,5 @@ public class Ticket implements Comparable<Ticket>{
         if (b == null) return -1;
         return a.compareToIgnoreCase(b);
     }
+
 }

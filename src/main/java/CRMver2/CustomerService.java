@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class CustomerService {
+public class CustomerService implements RegistrationService<Customer>,DashBoardService<Customer>{
     private ArrayList<Customer> customerList;
 
     public CustomerService() {
@@ -30,18 +30,96 @@ public class CustomerService {
         return customerList;
     }
 
-    public void registerCustomer() throws IOException {
+    // ── Customer Dashboard Menu ────────────────────────────────────────────────
+    public void customerProfileMenu(Customer loggedIn) throws IOException {
+        Scanner sc = new Scanner(System.in);
+        TicketService ts = new TicketService();
+        TicketMenu tm = new TicketMenu();
+        String ticketID = null ;
+        boolean exit = false;
+
+        do {
+            System.out.println("\n=== Customer Dashboard — Welcome, " + loggedIn.getUsername() + " ===");
+            System.out.println("1. Submit Service Request");
+            System.out.println("2. Track My Tickets");
+            System.out.println("3. Close Ticket & Give Feedback");
+            System.out.println("4. Update Purifier Model");
+            System.out.println("5. Update Installation Date");
+            System.out.println("6. Logout");
+            System.out.print("Choice: ");
+            String choice = sc.nextLine().trim();
+
+            switch (choice) {
+                case "1" -> ticketID = tm.showSubmitTicket(loggedIn.getId());
+                case "2" -> tm.showTrackTicketStatus(loggedIn.getId());
+                case "3" -> {
+                    System.out.print("Enter Ticket ID: ");
+                    try {
+                        ticketID = sc.nextLine().trim();
+                    } catch (Exception e) {
+                        System.out.println("[ERROR] Invalid Ticket ID! Please enter a valid Ticket ID.");
+                    }
+                    tm.showCloseTicketAndFeedback(ticketID,loggedIn.getId());
+                }
+                case "4" -> {
+                    String newModel;
+                    while (true) {
+                        System.out.print("New Model (Alkaline / RO System / Mineral): ");
+                        newModel = sc.nextLine().trim();
+                        if (newModel.equalsIgnoreCase("Alkaline") ||
+                                newModel.equalsIgnoreCase("RO System") ||
+                                newModel.equalsIgnoreCase("Mineral")) break;
+                        System.out.println("[ERROR] Invalid model.");
+                    }
+                    loggedIn.setPurifierModel(newModel);
+                    updateCustomerFile(loggedIn);
+                    System.out.println("[SUCCESS] Model updated!");
+                }
+                case "5" -> {
+                    String newDate;
+                    while (true) {
+                        System.out.print("New Installation Date (DD-MM-YYYY): ");
+                        newDate = sc.nextLine().trim();
+                        if (newDate.matches("\\d{2}-\\d{2}-\\d{4}")) break;
+                        System.out.println("[ERROR] Use DD-MM-YYYY format.");
+                    }
+                    loggedIn.setInstallationDate(newDate);
+                    updateCustomerFile(loggedIn);
+                    System.out.println("[SUCCESS] Date updated!");
+                }
+                case "6" -> exit = true;
+                default  -> System.out.println("[ERROR] Enter 1-6.");
+            }
+        } while (!exit);
+    }
+
+    private void updateCustomerFile(Customer updatedCustomer) throws IOException {
+        loadCustomersToList();
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("customer.txt", false))) {
+            for (Customer c : customerList) {
+                if (c.getId().equals(updatedCustomer.getId())) {
+                    bw.write(updatedCustomer.toString());
+                } else {
+                    bw.write(c.toString());
+                }
+                bw.newLine();
+            }
+        }
+    }
+
+    @Override
+    public void register(Customer user) throws IOException {
         Scanner sc = new Scanner(System.in);
         loadCustomersToList();
 
         System.out.println("\n=== Customer Registration ===");
-        
+
         // 1. Strict Username Validation (Characters ONLY)
         String username;
         while (true) {
             System.out.print("Enter Username (Letters only): ");
             username = sc.nextLine().trim();
-            
+
             if (username.isEmpty() || !username.matches("[a-zA-Z]+")) {
                 System.out.println("[ERROR] Username must contain ONLY letters (no numbers, spaces, or symbols).");
                 continue;
@@ -113,80 +191,19 @@ public class CustomerService {
 
         String newId = "C" + (customerList.size() + 1);
         Customer newCust = new Customer(newId, username, password, email, contact, address, model, "01-01-2026");
-        
+
         try (BufferedWriter bw = new BufferedWriter(new FileWriter("customer.txt", true))) {
             bw.write(newCust.toString());
             bw.newLine();
         }
-        
+
         System.out.println("\n[SUCCESS] Customer Registration Successful! You may now login.");
     }
 
-    // ── Customer Dashboard Menu ────────────────────────────────────────────────
-    public void customerProfileMenu(Customer loggedIn) throws IOException {
-        Scanner sc = new Scanner(System.in);
-        TicketService ts = new TicketService();
-        TicketMenu tm = new TicketMenu();
-        boolean exit = false;
 
-        do {
-            System.out.println("\n=== Customer Dashboard — Welcome, " + loggedIn.getUsername() + " ===");
-            System.out.println("1. Submit Service Request");
-            System.out.println("2. Track My Tickets");
-            System.out.println("3. Close Ticket & Give Feedback");
-            System.out.println("4. Update Purifier Model");
-            System.out.println("5. Update Installation Date");
-            System.out.println("6. Logout");
-            System.out.print("Choice: ");
-            String choice = sc.nextLine().trim();
+    @Override
+    public void dashBoard(Customer user) throws IOException {
 
-            switch (choice) {
-                case "1" -> tm.showSubmitTicket(loggedIn.getId());
-                case "2" -> tm.showTrackTicketStatus(loggedIn.getId());
-                case "3" -> tm.showCloseTicketAndFeedback(loggedIn.getId());
-                case "4" -> {
-                    String newModel;
-                    while (true) {
-                        System.out.print("New Model (Alkaline / RO System / Mineral): ");
-                        newModel = sc.nextLine().trim();
-                        if (newModel.equalsIgnoreCase("Alkaline") ||
-                                newModel.equalsIgnoreCase("RO System") ||
-                                newModel.equalsIgnoreCase("Mineral")) break;
-                        System.out.println("[ERROR] Invalid model.");
-                    }
-                    loggedIn.setPurifierModel(newModel);
-                    updateCustomerFile(loggedIn);
-                    System.out.println("[SUCCESS] Model updated!");
-                }
-                case "5" -> {
-                    String newDate;
-                    while (true) {
-                        System.out.print("New Installation Date (DD-MM-YYYY): ");
-                        newDate = sc.nextLine().trim();
-                        if (newDate.matches("\\d{2}-\\d{2}-\\d{4}")) break;
-                        System.out.println("[ERROR] Use DD-MM-YYYY format.");
-                    }
-                    loggedIn.setInstallationDate(newDate);
-                    updateCustomerFile(loggedIn);
-                    System.out.println("[SUCCESS] Date updated!");
-                }
-                case "6" -> exit = true;
-                default  -> System.out.println("[ERROR] Enter 1-6.");
-            }
-        } while (!exit);
     }
 
-    private void updateCustomerFile(Customer updatedCustomer) throws IOException {
-        loadCustomersToList();
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter("customer.txt", false))) {
-            for (Customer c : customerList) {
-                if (c.getId().equals(updatedCustomer.getId())) {
-                    bw.write(updatedCustomer.toString());
-                } else {
-                    bw.write(c.toString());
-                }
-                bw.newLine();
-            }
-        }
-    }
 }

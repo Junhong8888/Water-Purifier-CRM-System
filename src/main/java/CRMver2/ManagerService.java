@@ -4,33 +4,38 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class TechniqianRegister {
+public class ManagerService implements RegistrationService<Manager> {
 
     public void register() throws IOException {
+
+    }
+
+    @Override
+    public void register(Manager user) throws IOException {
         Scanner sc = new Scanner(System.in);
         StaffRepository staffRepository = new StaffRepository();
         ArrayList<Staff> currentStaff = staffRepository.loadStaffToList();
 
-        System.out.println("\n--- Technician Registration ---");
+        System.out.println("\n--- Manager Registration ---");
 
         String username;
         while (true) {
             System.out.print("Enter Username: ");
             username = sc.nextLine().trim();
-            
+
             if (username.isEmpty() || username.contains(",")) {
                 System.out.println("[ERROR] Username cannot be empty or contain commas.");
                 continue;
             }
-            
+
             boolean isTaken = false;
             for (Staff s : currentStaff) {
-                if (s.getUsername().equalsIgnoreCase(username) && s.getRole().equalsIgnoreCase("Technician")) {
+                if (s.getUsername().equalsIgnoreCase(username) && s.getRole().equalsIgnoreCase("Manager")) {
                     isTaken = true;
                     break;
                 }
             }
-            if (isTaken) System.out.println("[ERROR] A Technician with this username already exists.");
+            if (isTaken) System.out.println("[ERROR] A Manager with this username already exists.");
             else break;
         }
 
@@ -54,10 +59,18 @@ public class TechniqianRegister {
             }
         }
 
-        Staff newTech = new Staff("temp", username, password, "Technician", salary);
-        newTech.assignID(); 
-        new StaffRepository().writeFile(newTech.toString());
+        user.assignID();
+        user.setUsername(username);
+        user.setPassword(password);
+        user.setSalary(salary);
+        user.setRole("Manager");
 
-        System.out.println("\n[SUCCESS] Technician registered successfully! You may now login.");
+        //Staff newManager = new Staff("temp", username, password, "Manager", salary);
+
+        //newManager.assignID();
+
+        new StaffRepository().writeFile(user.toString());
+
+        System.out.println("\n[SUCCESS] Manager registered successfully! You may now login.");
     }
 }

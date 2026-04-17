@@ -60,14 +60,15 @@ public class MainMenu {
     }
 
     private static void handleRegistration(String roleChoice) throws IOException {
-        /*StaffService ss = new StaffService();
+        StaffService ss = new StaffService();
+
         switch (roleChoice) {
-            case "1" -> new CustomerService().registerCustomer();
-            case "2" -> ss.registerStaff("Staff");
-            case "3" -> ss.registerStaff("Manager");
-            case "4" -> ss.registerStaff("Technician");
+            case "1" -> new CustomerService().register(new Customer());
+            //case "2" -> new StaffService().;
+            case "3" -> new ManagerService().register(new Manager());
+            case "4" -> new TechnicianService().register(new  Technician());
             default -> System.out.println("[ERROR] Invalid Role Choice.");
-        }*/
+        }
     }
 
     private static void handleLogin(String roleChoice) throws IOException {
@@ -90,21 +91,18 @@ public class MainMenu {
      * Handles file creation, data seeding, and critical counter/list synchronization.
      */
     private static void initializeSystemResources() throws IOException {
-        File dir = new File("C:\\crmSystem");
-        if (!dir.exists()) dir.mkdirs();
-
-        File staffFile = new File("C:\\crmSystem\\staff.txt");
-        File ticketFile = new File("C:\\crmSystem\\ticket.txt");
+        File staffFile =  new File(System.getProperty("user.dir") + File.separator + "staff.txt");
+        File ticketFile = new File(System.getProperty("user.dir") + File.separator + "ticket.txt");
 
         // --- STAFF SEEDING ---
         if (staffFile.createNewFile() || staffFile.length() == 0) {
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(staffFile))) {
                 // Format: id,username,password,role,salary
-                bw.write("m001,Junhong,junhong,Manager,2500.00");
+                bw.write("m1,Junhong,junhong,Manager,2500.00");
                 bw.newLine();
-                bw.write("t001,Adam,adam123,Technician,1800.00");
+                bw.write("t1,Adam,adam123,Technician,1800.00");
                 bw.newLine();
-                bw.write("t002,Sarah,sarah123,Technician,1800.00");
+                bw.write("t2,Sarah,sarah123,Technician,1800.00");
                 bw.newLine();
             }
             System.out.println("[SYSTEM] Staff data seeded.");
@@ -113,9 +111,9 @@ public class MainMenu {
         // --- TICKET SEEDING ---
         if (ticketFile.createNewFile() || ticketFile.length() == 0) {
             List<String> ticketData = Arrays.asList(
-                    "t1,customer01,in progress,High,Adam,08-04-2025,null,Repair Water Purifier,null,null",
-                    "t2,customer02,in progress,High,Adam,14-04-2025,null,Water Purifier Maintenance,null,null",
-                    "t3,customer01,Completed,Low,Adam,14-04-2025,16-04-2025,Billing Enquiry,null,Resolved"
+                    "t1,C1,in progress,High,Adam,08-04-2025,null,Repair Water Purifier,null,null",
+                    "t2,C2,in progress,High,Adam,14-04-2025,null,Water Purifier Maintenance,null,null",
+                    "t3,C3,Completed,Low,Adam,14-04-2025,16-04-2025,Billing Enquiry,null,Resolved"
             );
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(ticketFile))) {
                 for (String line : ticketData) {
