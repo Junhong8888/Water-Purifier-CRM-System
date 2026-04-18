@@ -1,0 +1,4 @@
+m1,Junhong,junhong,Manager,2500.00
+t1,Adam,adam123,Technician,1800.00
+t2,Sarah,sarah123,Technician,1800.00
+t3,Junhong,junhong,Technician,2500.0
