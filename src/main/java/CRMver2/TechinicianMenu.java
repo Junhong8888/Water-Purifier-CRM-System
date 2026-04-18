@@ -18,6 +18,7 @@ public class TechinicianMenu implements DashBoardService {
             System.out.println("║  2. Edit Ticket (Add Notes & Update Status)  ║");
             System.out.println("║  3. Search & Filter Tickets                  ║");
             System.out.println("║  4. Assign Ticket to Technician              ║");
+            System.out.println("║  5. Exit                                     ║");
             System.out.println("╚══════════════════════════════════════════════╝");
             System.out.print("  Select option (1-4): ");
 
@@ -33,6 +34,6 @@ public class TechinicianMenu implements DashBoardService {
                 //case "7" -> System.out.println("  Logging out...");
                 default -> System.out.println("  [ERROR] Invalid choice. Please enter 1-4.");
             }
-        } while (!choice.equals("4"));
+        } while (!choice.equals("5"));
     }
 }

@@ -65,7 +65,7 @@ public class StaffService implements RegistrationService<Staff>{
 
                 boolean isTaken = false;
                 for (Staff s : currentStaff) {
-                    if (s.getUsername().equalsIgnoreCase(username) && s.getRole().equalsIgnoreCase(role)) {
+                    if (s.getUsername().equalsIgnoreCase(username)) {
                         isTaken = true;
                         break;
                     }

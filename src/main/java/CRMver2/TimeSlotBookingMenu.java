@@ -24,7 +24,6 @@ public class TimeSlotBookingMenu {
         boolean booked = false;
 
         do {
-            // --- Date input ---
             System.out.print("  Enter your desired date (DD-MM-YYYY): ");
             String dateInput = sc.nextLine().trim();
 
@@ -32,46 +31,42 @@ public class TimeSlotBookingMenu {
             try {
                 chosenDate = LocalDate.parse(dateInput, TimeSlotBooking.DATE_FMT);
             } catch (DateTimeParseException e) {
-                // FIX 6: bad format re-prompts instead of crashing
-                System.out.println("  Invalid date format — please use DD-MM-YYYY.");
+                System.out.println("  [ERROR] Invalid date format — please use DD-MM-YYYY.");
                 continue;
             }
 
             if (chosenDate.isBefore(LocalDate.now())) {
-                System.out.println("  Date cannot be in the past. Please enter a future date.");
+                System.out.println("  [ERROR] Date cannot be in the past.");
                 continue;
             }
-            System.out.println(chosenDate);
-            // --- Time slot selection ---
-            System.out.println("\n  Available Time Slots:");
+
+            // --- REFINED: Show the slots with strike-throughs ---
+            // This calls the method we fixed earlier
+            timeSlotBookingService.checkTimeSlot(chosenDate);
+
             String[] timeSlot = TimeSlotBooking.AVAILABLE_TIME_SLOTS;
-            for (int i = 0; i < timeSlot.length; i++) {
-                System.out.printf("    [%d] %s%n", i + 1, timeSlot[i]);
-            }
             System.out.print("  Select a time slot (1-" + timeSlot.length + "): ");
 
             int slotIndex;
             try {
-                // FIX 4: catch non-integer input
                 slotIndex = Integer.parseInt(sc.nextLine().trim());
             } catch (NumberFormatException e) {
-                System.out.println("  Invalid input — please enter a number.");
+                System.out.println("  [ERROR] Please enter a valid number.");
                 continue;
             }
 
-            // FIX 5: bounds check before array access
             if (slotIndex < 1 || slotIndex > timeSlot.length) {
-                System.out.printf("  Invalid choice — please select between 1 and %d.%n",
-                        timeSlot.length);
+                System.out.printf("  [ERROR] Select between 1 and %d.%n", timeSlot.length);
                 continue;
             }
 
+            // Create the LocalDateTime for the specific choice
             LocalDateTime chosen = LocalDateTime.parse(
                     dateInput + " " + timeSlot[slotIndex - 1], TimeSlotBooking.DATETIME_FMT);
 
-            // FIX 10: check if this slot is already taken
+            // Double-check availability before saving
             if (timeSlotBookingService.isSlotTaken(chosen)) {
-                System.out.println("  That time slot is already booked. Please choose another.");
+                System.out.println("  [X] This slot was just taken! Please choose a different one.");
                 continue;
             }
 
@@ -79,11 +74,9 @@ public class TimeSlotBookingMenu {
             timeSlotBooking.setTicketID(id);
             timeSlotBooking.setDateTime(chosen);
             booked = true;
-            String dateTime = chosen.format(timeSlotBooking.DATETIME_FMT);
 
             timeSlotBookingRepository.writeFile(timeSlotBooking.toString());
-
-            System.out.println("  ✓ Booking confirmed: " + dateTime);
+            System.out.println("  ✓ Booking confirmed: " + chosen.format(TimeSlotBooking.DATETIME_FMT));
 
         } while (!booked);
     }

@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class Customer extends User implements FileStorage {
+public class Customer extends User {
     private String name;
     private String contactNumber;
     private Address homeAddress;
@@ -33,21 +33,6 @@ public class Customer extends User implements FileStorage {
     public void setHomeAddress(Address homeAddress) { this.homeAddress = homeAddress; }
     public WaterPurifier getPurifierModel() { return purifierModel; }
     public void setPurifierModel(WaterPurifier purifierModel) { this.purifierModel = purifierModel; }
-
-    @Override
-    public void writeFile(String data) throws IOException {
-        String currentDirectory = System.getProperty("user.dir");
-        File file = new File(currentDirectory + File.separator + "customer.txt");
-
-        if (!file.exists()) {
-            file.createNewFile();
-        }
-
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
-            bw.write(data);
-            bw.newLine();
-        }
-    }
 
 
     @Override

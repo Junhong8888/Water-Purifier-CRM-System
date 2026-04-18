@@ -4,93 +4,19 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+
 public class CustomerService implements RegistrationService<Customer>{
     private ArrayList<Customer> customerList;
+    private CustomerRepository customerRepo;
 
     public CustomerService() {
         customerList = new ArrayList<>();
+        customerRepo = new CustomerRepository();
     }
 
-    public ArrayList<Customer> loadCustomersToList() throws IOException {
-        customerList.clear();
-        String currentDirectory = System.getProperty("user.dir");
-        File file = new File(currentDirectory + File.separator + "customer.txt");
 
-        if (!file.exists()) return customerList;
-
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] data = line.split(",");
-                if (data.length >= 8) {
-                    customerList.add(new Customer(data[0], data[1], data[2], data[3], data[4], new Address(), new WaterPurifier()));
-                }
-            }
-        }
-        return customerList;
-    }
-
-    // ── Customer Dashboard Menu ────────────────────────────────────────────────
-    public void customerProfileMenu(Customer loggedIn) throws IOException {
-        Scanner sc = new Scanner(System.in);
-        TicketService ts = new TicketService();
-        TicketMenu tm = new TicketMenu();
-        String ticketID = null ;
-        boolean exit = false;
-
-        do {
-            System.out.println("\n=== Customer Dashboard — Welcome, " + loggedIn.getUsername() + " ===");
-            System.out.println("1. Submit Service Request");
-            System.out.println("2. Track My Tickets");
-            System.out.println("3. Close Ticket & Give Feedback");
-            System.out.println("4. Register Purifier Model");
-            System.out.println("5. Logout");
-            System.out.print("Choice: ");
-            String choice = sc.nextLine().trim();
-
-            switch (choice) {
-                case "1" -> ticketID = tm.showSubmitTicket(loggedIn.getId());
-                case "2" -> tm.showTrackTicketStatus(loggedIn.getId());
-                case "3" -> {
-                    System.out.print("Enter Ticket ID: ");
-                    try {
-                        ticketID = sc.nextLine().trim();
-                    } catch (Exception e) {
-                        System.out.println("[ERROR] Invalid Ticket ID! Please enter a valid Ticket ID.");
-                    }
-                    tm.showCloseTicketAndFeedback(ticketID,loggedIn.getId());
-                }
-                case "4" -> {
-                    String newModel;
-                    while (true) {
-                        System.out.print("New Model (Alkaline / RO System / Mineral): ");
-                        newModel = sc.nextLine().trim();
-                        if (newModel.equalsIgnoreCase("Alkaline") ||
-                                newModel.equalsIgnoreCase("RO System") ||
-                                newModel.equalsIgnoreCase("Mineral")) break;
-                        System.out.println("[ERROR] Invalid model.");
-                    }
-
-                    String newDate;
-                    while (true) {
-                        System.out.print("New Installation Date (DD-MM-YYYY): ");
-                        newDate = sc.nextLine().trim();
-                        if (newDate.matches("\\d{2}-\\d{2}-\\d{4}")) break;
-                        System.out.println("[ERROR] Use DD-MM-YYYY format.");
-                    };
-                    loggedIn.setPurifierModel(new WaterPurifier(newModel, newDate));
-                    System.out.println("[SUCCESS] Date updated!");
-                    updateCustomerFile(loggedIn);
-                    System.out.println("[SUCCESS] Model updated!");
-                }
-                case "5" -> exit = true;
-                default  -> System.out.println("[ERROR] Enter 1-6.");
-            }
-        } while (!exit);
-    }
-
-    private void updateCustomerFile(Customer updatedCustomer) throws IOException {
-        loadCustomersToList();
+    public void updateCustomerFile(Customer updatedCustomer) throws IOException {
+        this.customerList = customerRepo.loadCustomersToList();
         try (BufferedWriter bw = new BufferedWriter(new FileWriter("customer.txt", false))) {
             for (Customer c : customerList) {
                 if (c.getId().equals(updatedCustomer.getId())) {
@@ -106,7 +32,11 @@ public class CustomerService implements RegistrationService<Customer>{
     @Override
     public void register(Customer user) throws IOException {
         Scanner sc = new Scanner(System.in);
-        loadCustomersToList();
+        // FIX: You must assign the returned list to your local variable!
+        this.customerList = customerRepo.loadCustomersToList();
+
+        // Now when you check size or maxId, it won't be 0
+        //System.out.println("Debug: System found " + customerList.size() + " existing customers.");
 
         System.out.println("\n=== Customer Registration ===");
 
@@ -185,13 +115,23 @@ public class CustomerService implements RegistrationService<Customer>{
             System.out.println("[ERROR] Invalid Model! Please enter Alkaline, RO System, or Mineral.");
         }
 
-        String newId = "C" + (customerList.size() + 1);
+        int maxId = 0;
+        for (Customer c : customerList) {
+            // Extract number from "C12" -> 12
+            int idNum = Integer.parseInt(c.getId().substring(1));
+            if (idNum > maxId) maxId = idNum;
+        }
+        String newId = "C" + (maxId + 1);
         Customer newCust = new Customer(newId, username, password, email, contact, new Address(address), new WaterPurifier(model,"01-01-2026"));
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter("customer.txt", true))) {
             bw.write(newCust.toString());
             bw.newLine();
         }
+
+        // ... after writing to file ...
+        customerList.add(newCust); // Keep the local list updated
+        System.out.println("\n[SUCCESS] Registration Successful! ID: " + newId);
 
         System.out.println("\n[SUCCESS] Customer Registration Successful! You may now login.");
     }

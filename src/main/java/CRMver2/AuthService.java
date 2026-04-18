@@ -35,6 +35,7 @@ public class AuthService {
                 Staff.staffList = new StaffRepository().loadStaffToList();
 
                 for (Staff s : Staff.staffList) {
+                    System.out.println("DEBUG: Checking User: " + s.getUsername() + " | Role in File: [" + s.getRole() + "]");
                     if (s.getUsername().equalsIgnoreCase(username) && s.getPassword().equals(password)) {
                         credentialsMatched = true;
 
@@ -60,7 +61,8 @@ public class AuthService {
             // 2. Check Customers
             // ==========================================
             if (expectedRole.equalsIgnoreCase("Customer")) {
-                CustomerService cs = new CustomerService();
+                CustomerRepository cs = new CustomerRepository();
+                CustomerMenu customerMenu = new CustomerMenu();
 
                 // CustomerService already fetches fresh data via loadCustomersToList(),
                 // so this was already safe from the caching bug!
@@ -69,7 +71,7 @@ public class AuthService {
                         credentialsMatched = true;
 
                         System.out.println("\n[SUCCESS] Welcome Customer: " + c.getUsername());
-                        cs.customerProfileMenu(c);
+                        customerMenu.customerProfileMenu(c);
                         return;
                     }
                 }

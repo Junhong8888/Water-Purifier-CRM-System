@@ -37,7 +37,7 @@ public class ManagerMenu implements DashBoardService {
                     Customer targetCustomer;
                     System.out.print("Enter Customer ID: ");
                     String customerID = sc.nextLine();
-                    ArrayList<Customer> customers = new CustomerService().loadCustomersToList();
+                    ArrayList<Customer> customers = new CustomerRepository().loadCustomersToList();
                     for (Customer customer : customers) {
                         if(customer.getId().equals(customerID)) {
                             targetCustomer = customer;

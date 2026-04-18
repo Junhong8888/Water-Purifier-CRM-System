@@ -57,6 +57,12 @@ public class TimeSlotBooking{
         this.dateTime = dateTime;
     }
 
+    public String getTimeSlotString() {
+        // This MUST match the format in your AVAILABLE_TIME_SLOTS array (e.g., "10:00")
+        DateTimeFormatter timeOnly = DateTimeFormatter.ofPattern("HH:mm");
+        return this.dateTime.format(timeOnly);
+    }
+
     @Override
     public String toString() {
         String formattedDate = (dateTime != null)

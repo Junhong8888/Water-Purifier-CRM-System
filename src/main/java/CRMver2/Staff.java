@@ -57,15 +57,35 @@ public class Staff extends User{
         counter = max + 1;
     }
 
-    public void assignID() {
-        String prefix = "s"; // Default prefix
-        if (role != null) {
-            if (role.equalsIgnoreCase("Technician")) prefix = "t";
-            else if (role.equalsIgnoreCase("Manager")) prefix = "m";
+    public void assignID() throws IOException {
+        StaffRepository repo = new StaffRepository();
+        ArrayList<Staff> currentList = repo.loadStaffToList();
+
+        // 1. Determine the prefix based on role
+        String prefix = "S";
+        if (this.role.equalsIgnoreCase("Technician")) prefix = "T";
+        else if (this.role.equalsIgnoreCase("Manager")) prefix = "M";
+
+        // 2. Find the highest existing number for THIS prefix
+        int maxNumber = 0;
+        for (Staff s : currentList) {
+            if (s.getId().toUpperCase().startsWith(prefix)) {
+                try {
+                    // Extract number from "T5" -> 5
+                    int currentNum = Integer.parseInt(s.getId().substring(1));
+                    if (currentNum > maxNumber) {
+                        maxNumber = currentNum;
+                    }
+                } catch (Exception e) {
+                    // Skip lines with bad ID formats
+                }
+            }
         }
-        setId(prefix + counter);
-        counter++;
+
+        // 3. Set the new ID (Max + 1)
+        this.setId(prefix + (maxNumber + 1));
     }
+
 
     public String getID() {
         return getId() + counter;

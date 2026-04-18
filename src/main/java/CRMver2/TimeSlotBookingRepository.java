@@ -40,7 +40,7 @@ public class TimeSlotBookingRepository implements FileStorage{
                 // FIX 2: actually parse the dateTime string from the file
                 LocalDateTime parsedDateTime = null;
                 try {
-                    parsedDateTime = LocalDateTime.parse(parts[1].trim(), TimeSlotBooking.DATE_FMT);
+                    parsedDateTime = LocalDateTime.parse(parts[1].trim(), TimeSlotBooking.DATETIME_FMT);
                 } catch (DateTimeParseException e) {
                     System.out.printf("  Warning: invalid dateTime on line %d (\"%s\")%n",
                             lineNumber, parts[1]);

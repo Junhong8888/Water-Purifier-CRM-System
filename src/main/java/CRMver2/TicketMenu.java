@@ -224,14 +224,14 @@ public class TicketMenu {
         System.out.println("\n  [ " + title + " ]");
         System.out.println("  +---------------+---------------------+----------+------------------+--------------+");
         System.out.printf("  | %-13s | %-19s | %-8s | %-16s | %-12s |%n",
-                "Customer ID", "Status", "Priority", "Technician", "Date");
+                "Ticket ID", "Status", "Priority", "Technician", "Date");
         System.out.println("  +---------------+---------------------+----------+------------------+--------------+");
         for (Ticket t : tickets) {
             String priority = t.getPriorityLevel() != null ? t.getPriorityLevel() : "-";
             String color = priority.equalsIgnoreCase("HIGH")   ? RED :
                     priority.equalsIgnoreCase("MEDIUM") ? YELLOW : GREEN;
             System.out.printf("  | %-13s | %-19s | %s | %-16s | %-12s |%n",
-                    nvl(t.getCustomerID()), nvl(t.getTicketStatus()),
+                    nvl(t.getId()), nvl(t.getTicketStatus()),
                     color + String.format("%-8s", priority) + RESET,
                     nvl(t.getTechnician()), nvl(t.getDate()));
         }

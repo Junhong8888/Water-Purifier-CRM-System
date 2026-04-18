@@ -60,7 +60,7 @@ public class Test {
 
     public static void startCRMSystem() throws IOException {
         // 1. Setup files, seed data, and sync static lists/counters
-        MainMenu.initializeSystemResources();
+        SystemInitializer.initializeSystemResources();
 
 
         Scanner sc = new Scanner(System.in);
@@ -85,7 +85,7 @@ public class Test {
 
             if (choice.equals("1")) {
                 System.out.println("\nRegister as:");
-                System.out.println("1. Customer\n2. Staff\n3. Manager\n4. Technician");
+                System.out.println("1. Customer\n2. Manager\n3. Technician");
                 System.out.print("Choice: ");
                 String regChoice = sc.nextLine().trim();
 

@@ -2,3 +2,5 @@ m0,junhong88,junhong88,Manager,2500.0
 s1,junhong,junhong,Manager,2988.0
 m2,MangerLow,MangerLow,Manager,2933.0
 m3,lwo012,low012,Manager,3500.0
+t4,lowjunhong,lowjunhong,Technician,2000.0
+T5,junhong012,junhong012,Technician,18.0

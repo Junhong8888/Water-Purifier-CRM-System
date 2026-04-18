@@ -30,23 +30,43 @@ public class TimeSlotBookingService {
 
     public void checkTimeSlot(LocalDate localDate) {
         ArrayList<TimeSlotBooking> existing = timeSlotBookingRepository.loadTimeSlotBookingToList();
-        boolean booked = false;
-        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        String[] slots = TimeSlotBooking.AVAILABLE_TIME_SLOTS;
 
-        for (TimeSlotBooking b : existing) {
-            System.out.println(b.getDateTime());
-            if (b.getDateTime().toLocalDate().equals(localDate)) {
-                booked = true;
+        System.out.println("\n  --- Availability for " + localDate.format(TimeSlotBooking.DATE_FMT) + " ---");
+
+        for (int i = 0; i < slots.length; i++) {
+            String currentSlotLabel = slots[i];
+            boolean isTaken = false;
+
+            // Check if any existing booking matches THIS date and THIS time string
+            for (TimeSlotBooking b : existing) {
+                if (b.getDateTime() == null) continue;
+
+                // 1. Check if the DATE matches
+                boolean dateMatches = b.getDateTime().toLocalDate().equals(localDate);
+
+                // 2. Check if the TIME matches by comparing the formatted strings
+                // This ensures that "10:00:00" matches "10:00:00" regardless of the Date part
+                String bookingTimeOnly = b.getDateTime().toLocalTime().toString(); // e.g., "10:00"
+
+                // Check if our target slot (e.g. "10:00:00") contains the booking's time
+                if (dateMatches && currentSlotLabel.contains(bookingTimeOnly)) {
+                    isTaken = true;
+                    break;
+                }
+            }
+
+
+            if (isTaken) {
+                // Display with Strike-through
+                System.out.printf("    %s[%d] %s (BOOKED)%s%n",
+                        TimeSlotBooking.STRIKE, i + 1, currentSlotLabel, TimeSlotBooking.RESET);
+            } else {
+                // Display normally
+                System.out.printf("    [%d] %s%n", i + 1, currentSlotLabel);
             }
         }
-
-        System.out.println("\n  Available Time Slots:");
-        for (int i = 0; i < AVAILABLE_TIME_SLOTS.length; i++) {
-            if(booked) {
-                System.out.printf("%s    [%d] %s %s%n",TimeSlotBooking.STRIKE, i + 1, AVAILABLE_TIME_SLOTS[i],TimeSlotBooking.RESET);
-            } else{
-                System.out.printf("    [%d] %s%n", i + 1, AVAILABLE_TIME_SLOTS[i]);
-            }
-        }
+        System.out.println();
     }
 }
+
