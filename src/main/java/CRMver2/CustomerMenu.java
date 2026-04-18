@@ -26,25 +26,27 @@ public class CustomerMenu{
             System.out.println("\n=== Customer Dashboard — Welcome, " + loggedIn.getUsername() + " ===");
             System.out.println("1. Submit Service Request");
             System.out.println("2. Track My Tickets");
-            System.out.println("3. Close Ticket & Give Feedback");
-            System.out.println("4. Register Purifier Model");
-            System.out.println("5. Logout");
+            System.out.println("3. Show Ticket History");
+            System.out.println("4. Close Ticket & Give Feedback");
+            System.out.println("5. Register Purifier Model");
+            System.out.println("6. Logout");
             System.out.print("Choice: ");
             String choice = sc.nextLine().trim();
 
             switch (choice) {
                 case "1" -> ticketID = tm.showSubmitTicket(loggedIn.getId());
                 case "2" -> tm.showTrackTicketStatus(loggedIn.getId());
-                case "3" -> {
+                case "3" -> tm.showMyTicketHistory(loggedIn.getId());
+                case "4" -> {
                     System.out.print("Enter Ticket ID: ");
                     try {
                         ticketID = sc.nextLine().trim();
                     } catch (Exception e) {
                         System.out.println("[ERROR] Invalid Ticket ID! Please enter a valid Ticket ID.");
                     }
-                    tm.showCloseTicketAndFeedback(ticketID,loggedIn.getId());
+                    tm.showCloseTicketAndFeedback(ticketID,loggedIn.getUsername());
                 }
-                case "4" -> {
+                case "5" -> {
                     String newModel;
                     while (true) {
                         System.out.print("New Model (Alkaline / RO System / Mineral): ");
@@ -67,7 +69,7 @@ public class CustomerMenu{
                     customerService.updateCustomerFile(loggedIn);
                     System.out.println("[SUCCESS] Model updated!");
                 }
-                case "5" -> exit = true;
+                case "6" -> exit = true;
                 default  -> System.out.println("[ERROR] Enter 1-6.");
             }
         } while (!exit);

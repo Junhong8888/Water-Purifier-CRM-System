@@ -35,13 +35,17 @@ public class AuthService {
                 Staff.staffList = new StaffRepository().loadStaffToList();
 
                 for (Staff s : Staff.staffList) {
-                    System.out.println("DEBUG: Checking User: " + s.getUsername() + " | Role in File: [" + s.getRole() + "]");
+                    //System.out.println("DEBUG: Checking User: " + s.getUsername() + " | Role in File: [" + s.getRole() + "]");
                     if (s.getUsername().equalsIgnoreCase(username) && s.getPassword().equals(password)) {
                         credentialsMatched = true;
 
                         // Enforce Section-Based Login
-                        if (s.getRole().equalsIgnoreCase(expectedRole)) {
+                        if (s.getUsername().equalsIgnoreCase(username)
+                                && s.getPassword().equals(password)
+                                && s.getRole().equalsIgnoreCase(expectedRole)) {
+
                             System.out.println("\n[SUCCESS] Welcome " + s.getRole() + ": " + s.getUsername());
+
                             if(s.getRole().equalsIgnoreCase("Manager")) {
                                 new ManagerMenu().dashBoard();
                             } else {
@@ -49,11 +53,23 @@ public class AuthService {
                             }
                             return;
                         } else {
-                            System.out.println("\n[ERROR] Role mismatch! You are registered as a " + s.getRole() + ".");
-                            System.out.println("Please check if you have selected the correct role from the menu.");
+                            System.out.println("[ERROR] Username and password do not match.");
                             return;
                         }
                     }
+                }
+            }
+
+            for (Staff s : Staff.staffList) {
+                if (s.getUsername().equalsIgnoreCase(username)
+                        && s.getPassword().equals(password)) {
+                    credentialsMatched = true;
+                    // Credentials exist but no matching role found in the first loop
+                    System.out.println("\n[ERROR] No " + expectedRole
+                            + " account found with these credentials.");
+                    System.out.println("You have an account as: " + s.getRole()
+                            + ". Please login under the correct section.");
+                    break;
                 }
             }
 

@@ -69,6 +69,21 @@ public class TicketMenu {
         printTableFooter();
     }
 
+    public void showMyTicketHistory(String customerId) throws IOException {
+        System.out.println("\n--- [Module 2] My Tickets History---");
+        ArrayList<Ticket> tickets = service.getTicketsByCustomer(customerId);
+        if (tickets.isEmpty()) {
+            System.out.println("  No tickets found for: " + customerId);
+            return;
+        }
+        printTableHeader();
+        //for (Ticket t : tickets) printRow(t);
+        tickets.stream()
+                .filter(ticket -> (ticket.getTicketStatus().equalsIgnoreCase("Completed")))
+                .forEach(ticket -> printRow(ticket));
+        printTableFooter();
+    }
+
     /** Customer closes a ticket and rates the technician. */
     public void showCloseTicketAndFeedback(String ticketid, String customerId) throws IOException {
         Scanner sc = new Scanner(System.in);
