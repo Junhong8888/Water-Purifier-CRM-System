@@ -17,7 +17,7 @@ public class MaintenanceHistoryReport extends Report {
         System.out.println("  Unit Model: " + targetCustomer.getPurifierModel());
 
         // Filters tickets specifically for this customer
-        List<CRMver2.Ticket> history = tickets.stream()
+        List<Ticket> history = tickets.stream()
                 .filter(t -> t.getCustomerID().equalsIgnoreCase(targetCustomer.getId()) || 
                              t.getCustomerID().equalsIgnoreCase(targetCustomer.getUsername()))
                 .collect(Collectors.toList());

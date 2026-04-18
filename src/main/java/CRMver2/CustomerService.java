@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class CustomerService implements RegistrationService<Customer>,DashBoardService<Customer>{
+public class CustomerService implements RegistrationService<Customer>{
     private ArrayList<Customer> customerList;
 
     public CustomerService() {
@@ -194,12 +194,6 @@ public class CustomerService implements RegistrationService<Customer>,DashBoardS
         }
 
         System.out.println("\n[SUCCESS] Customer Registration Successful! You may now login.");
-    }
-
-
-    @Override
-    public void dashBoard(Customer user) throws IOException {
-
     }
 
 }

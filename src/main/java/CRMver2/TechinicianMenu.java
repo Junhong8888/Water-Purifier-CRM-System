@@ -3,9 +3,9 @@ package CRMver2;
 import java.io.IOException;
 import java.util.Scanner;
 
-public class TechinicianMenu implements DashBoardService<Technician> {
+public class TechinicianMenu implements DashBoardService {
     @Override
-    public void dashBoard(Technician user) throws IOException {
+    public void dashBoard() throws IOException {
         TicketMenu ticketMenu = new TicketMenu();
         Scanner sc = new Scanner(System.in);
         String choice;

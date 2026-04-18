@@ -15,7 +15,7 @@ public class SystemInitializer {
     if (!new File(dir + "customer.txt").exists()) new File(dir + "customer.txt").createNewFile();
     
     // Seed initial manager if file is empty
-    Staff staff = new Staff();
+    //Staff staff = new Staff();
     // Logic to only write if file is empty would go here
     
     System.out.println("System Initialized. Welcome to Apple Vacation CRM.");

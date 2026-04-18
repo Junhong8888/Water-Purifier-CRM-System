@@ -13,7 +13,7 @@ public class MainMenu {
     /**
      * Entry point for the CRM application.
      */
-    public static void startCRMSystem() throws IOException {
+    /*public static void startCRMSystem() throws IOException {
         // 1. Setup files, seed data, and sync static lists/counters
         initializeSystemResources();
 
@@ -21,10 +21,15 @@ public class MainMenu {
         User myAdmin = new Manager();
         User myTechnician = new Technician();
         List<RegistrationService> services = new ArrayList<>();
+        List<DashBoardService>  dashBoardServices = new ArrayList<>();
 
         services.add(new CustomerService());
         services.add(new ManagerService());
         services.add(new TechnicianService());
+
+        dashBoardServices.add(new StaffMenu());
+        dashBoardServices.add(new TechinicianMenu());
+        dashBoardServices.add(new ManagerMenu());
 
         Scanner sc = new Scanner(System.in);
 
@@ -74,19 +79,19 @@ public class MainMenu {
                 System.out.println("[ERROR] Invalid option. Please enter 1, 2, or 3.");
             }
         }
-    }
+    }*/
 
-    private static void handleRegistration(String roleChoice) throws IOException {
+    /*private static void handleRegistration(String roleChoice) throws IOException {
         StaffService ss = new StaffService();
 
         switch (roleChoice) {
-            case "1" -> new CustomerService().register(new Customer());
+            case "1" -> new CustomerService().register(new  Customer());
             //case "2" -> new StaffService().;
             case "3" -> new ManagerService().register(new Manager());
             case "4" -> new TechnicianService().register(new  Technician());
             default -> System.out.println("[ERROR] Invalid Role Choice.");
         }
-    }
+    }*/
 
     private static void handleLogin(String roleChoice) throws IOException {
         String role = "";
@@ -107,7 +112,7 @@ public class MainMenu {
     /**
      * Handles file creation, data seeding, and critical counter/list synchronization.
      */
-    private static void initializeSystemResources() throws IOException {
+    public static void initializeSystemResources() throws IOException {
         File staffFile =  new File(System.getProperty("user.dir") + File.separator + "staff.txt");
         File ticketFile = new File(System.getProperty("user.dir") + File.separator + "ticket.txt");
 

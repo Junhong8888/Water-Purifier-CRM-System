@@ -41,7 +41,11 @@ public class AuthService {
                         // Enforce Section-Based Login
                         if (s.getRole().equalsIgnoreCase(expectedRole)) {
                             System.out.println("\n[SUCCESS] Welcome " + s.getRole() + ": " + s.getUsername());
-                            staffMenu.dashBoard(new Staff());
+                            if(s.getRole().equalsIgnoreCase("Manager")) {
+                                new ManagerMenu().dashBoard();
+                            } else {
+                                new TechinicianMenu().dashBoard();
+                            }
                             return;
                         } else {
                             System.out.println("\n[ERROR] Role mismatch! You are registered as a " + s.getRole() + ".");
