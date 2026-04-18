@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 
-public class TimeSlotBooking{
+public class TimeSlotBooking implements Comparable<TimeSlotBooking>{
     public static final String STRIKE = "\u001B[9m";
     public static final String RESET = "\u001B[0m";
 
@@ -69,5 +69,10 @@ public class TimeSlotBooking{
                 ? dateTime.format(DATETIME_FMT)
                 : "null";
         return ticketID + "," + formattedDate;
+    }
+
+    @Override
+    public int compareTo(TimeSlotBooking o) {
+        return this.dateTime.compareTo(o.dateTime);
     }
 }

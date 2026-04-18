@@ -46,63 +46,63 @@ public class StaffService implements RegistrationService<Staff>{
 
     @Override
     public void register(Staff staff) throws IOException {
-            String role = staff.getRole();
-            Scanner sc = new Scanner(System.in);
-            StaffRepository staffRepository = new StaffRepository();
-            ArrayList<Staff> currentStaff = staffRepository.loadStaffToList();
+        String role = staff.getRole();
+        Scanner sc = new Scanner(System.in);
+        StaffRepository staffRepository = new StaffRepository();
+        ArrayList<Staff> currentStaff = staffRepository.loadStaffToList();
 
-            System.out.println("\n---" + role  + " Registration ---");
+        System.out.println("\n---" + role  + " Registration ---");
 
-            String username;
-            while (true) {
-                System.out.print("Enter Username: ");
-                username = sc.nextLine().trim();
+        String username;
+        while (true) {
+            System.out.print("Enter Username: ");
+            username = sc.nextLine().trim();
 
-                if (username.isEmpty() || username.contains(",")) {
-                    System.out.println("[ERROR] Username cannot be empty or contain commas.");
-                    continue;
-                }
-
-                boolean isTaken = false;
-                for (Staff s : currentStaff) {
-                    if (s.getUsername().equalsIgnoreCase(username)) {
-                        isTaken = true;
-                        break;
-                    }
-                }
-                if (isTaken) System.out.println("[ERROR] A " + role + " with this username already exists.");
-                else break;
+            if (username.isEmpty() || username.contains(",")) {
+                System.out.println("[ERROR] Username cannot be empty or contain commas.");
+                continue;
             }
 
-            String password;
-            while (true) {
-                System.out.print("Enter Password (min 6 chars): ");
-                password = sc.nextLine().trim();
-                if (password.length() >= 6 && !password.contains(",")) break;
-                System.out.println("[ERROR] Password must be at least 6 characters and contain no commas.");
-            }
-
-            double salary = 0;
-            while (true) {
-                try {
-                    System.out.print("Enter Monthly Salary: ");
-                    salary = Double.parseDouble(sc.nextLine().trim());
-                    if (salary > 0) break;
-                    else System.out.println("[ERROR] Salary must be greater than 0.");
-                } catch (Exception e) {
-                    System.out.println("[ERROR] Please enter a valid number for salary.");
+            boolean isTaken = false;
+            for (Staff s : currentStaff) {
+                if (s.getUsername().equalsIgnoreCase(username) && s.getRole().equalsIgnoreCase(role)) {
+                    isTaken = true;
+                    break;
                 }
             }
+            if (isTaken) System.out.println("[ERROR] A " + role + " with this username already exists.");
+            else break;
+        }
 
-            staff.setUsername(username);
-            staff.setPassword(password);
-            staff.setSalary(salary);
-            staff.setRole(role);
-            staff.assignID();
+        String password;
+        while (true) {
+            System.out.print("Enter Password (min 6 chars): ");
+            password = sc.nextLine().trim();
+            if (password.length() >= 6 && !password.contains(",")) break;
+            System.out.println("[ERROR] Password must be at least 6 characters and contain no commas.");
+        }
 
-            new StaffRepository().writeFile(staff.toString());
+        double salary = 0;
+        while (true) {
+            try {
+                System.out.print("Enter Monthly Salary: ");
+                salary = Double.parseDouble(sc.nextLine().trim());
+                if (salary > 0) break;
+                else System.out.println("[ERROR] Salary must be greater than 0.");
+            } catch (Exception e) {
+                System.out.println("[ERROR] Please enter a valid number for salary.");
+            }
+        }
 
-            System.out.println("\n[SUCCESS] "+ role +" registered successfully! You may now login.");
+        staff.setUsername(username);
+        staff.setPassword(password);
+        staff.setSalary(salary);
+        staff.setRole(role);
+        staff.assignID();
+
+        new StaffRepository().writeFile(staff.toString());
+
+        System.out.println("\n[SUCCESS] "+ role +" registered successfully! You may now login.");
 
     }
 

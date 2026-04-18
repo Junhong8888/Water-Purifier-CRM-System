@@ -86,22 +86,20 @@ public class TicketService {
         return false;
     }*/
 
-    public boolean closeTicketAndFeedback(String ticketId, String customerId, String rating) throws IOException {
-        ArrayList<Ticket> allTickets = repo.loadAll();
+    public boolean closeTicketAndFeedback(String ticketId, String customerId, String feedbackData) throws IOException {
+        ArrayList<Ticket> allTickets = repo.loadAll(); //
         boolean updated = false;
 
         for (Ticket t : allTickets) {
-            // Validate Ticket ID, Customer ID ownership, and current Status
             if (t.getId().equalsIgnoreCase(ticketId) &&
                     t.getCustomerID().equalsIgnoreCase(customerId) &&
-                    !t.getTicketStatus().equalsIgnoreCase(STATUS_COMPLETED)) {
+                    !t.getTicketStatus().equalsIgnoreCase(STATUS_COMPLETED)) { //
 
-                t.setTicketStatus(STATUS_COMPLETED);
-                t.setResponse("Customer Rating: " + rating + " Stars");
-                t.setResolveTime(java.time.LocalDateTime.now().toString());
+                t.setTicketStatus(STATUS_COMPLETED); //
+                t.setResponse(feedbackData); // Stores "X Stars | Comments" in the 10th column
+                t.setResolveTime(java.time.LocalDateTime.now().toString()); //
 
-                // Save the specific updated ticket
-                repo.update(t);
+                repo.update(t); // Overwrites the file
                 updated = true;
                 break;
             }

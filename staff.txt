@@ -6,3 +6,4 @@ t4,lowjunhong,lowjunhong,Technician,2000.0
 T5,junhong012,junhong012,Technician,18.0
 T6,junlowdfk,fdjfj123,Technician,90.0
 T7,lowjh,lowjh8,Technician,2900.0
+T8,junhong88,junhong88,Technician,2500.0

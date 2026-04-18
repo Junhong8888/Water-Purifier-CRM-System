@@ -7,6 +7,7 @@ import java.util.Scanner;
 
 public class Test {
     public static void main(String[] args) throws IOException {
+
         // This prints the tables you mentioned
         SystemInitializer.runLegacyStaffTests();
         //start();

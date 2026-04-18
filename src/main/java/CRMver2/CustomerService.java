@@ -52,7 +52,7 @@ public class CustomerService implements RegistrationService<Customer>{
             }
             boolean taken = false;
             for (Customer c : customerList) {
-                if (c.getUsername().equalsIgnoreCase(username)) { taken = true; break; }
+                if (c.getUsername().equalsIgnoreCase(username) ) { taken = true; break; }
             }
             if (taken) System.out.println("[ERROR] Username already exists!");
             else break;

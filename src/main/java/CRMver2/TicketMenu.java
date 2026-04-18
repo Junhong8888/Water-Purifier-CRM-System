@@ -89,6 +89,7 @@ public class TicketMenu {
         Scanner sc = new Scanner(System.in);
         System.out.println("\n--- Close Ticket & Give Feedback ---");
 
+        // 1. Get Star Rating
         String rating = "";
         while (true) {
             System.out.print("  Rate the technician (1-5 stars): ");
@@ -97,11 +98,23 @@ public class TicketMenu {
             System.out.println("  [ERROR] Enter a number between 1 and 5.");
         }
 
-        boolean success = service.closeTicketAndFeedback(ticketid,customerId, rating);
+        // 2. Add Response Section (Comments)
+        System.out.print("  Enter your feedback/comments (optional): ");
+        String feedbackComment = sc.nextLine().trim();
+        if (feedbackComment.isEmpty() || feedbackComment.equalsIgnoreCase("null")) {
+            feedbackComment = "No additional comments.";
+        }
+
+        // Combine both into one string to be stored in the 'response' field
+        String finalFeedback = rating + " Stars | " + feedbackComment;
+
+        // 3. Call Service
+        boolean success = service.closeTicketAndFeedback(ticketid, customerId, finalFeedback);
+
         if (success) {
             System.out.println("  [SUCCESS] Ticket closed. Thank you for your feedback!");
         } else {
-            System.out.println("  [ERROR] No active ticket found for your account.");
+            System.out.println("  [ERROR] Ticket could not be closed. Please check the Ticket ID.");
         }
     }
 

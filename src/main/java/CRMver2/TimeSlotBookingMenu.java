@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class TimeSlotBookingMenu {
@@ -17,6 +18,68 @@ public class TimeSlotBookingMenu {
         this.timeSlotBookingService = new TimeSlotBookingService();
         this.timeSlotBookingRepository = new TimeSlotBookingRepository();
         this.timeSlotBooking = new TimeSlotBooking();
+    }
+
+    public void viewTimeSlotBooking(User user) throws IOException {
+        ArrayList<TimeSlotBooking> allBookings = timeSlotBookingRepository.loadTimeSlotBookingToList();
+        ArrayList<Ticket> allTickets = new TicketRepository().loadAll();
+        ArrayList<Customer> allCustomers = new CustomerRepository().loadCustomersToList();
+
+        boolean found = false;
+
+        if (user instanceof Customer customer) {
+            System.out.println("\n--- My Appointments ---");
+            System.out.printf("%-15s | %-20s | %-10s%n", "Ticket ID", "Date & Time", "Status");
+            System.out.println("------------------------------------------------------------");
+
+            for (TimeSlotBooking booking : allBookings) {
+                for (Ticket ticket : allTickets) {
+                    if (ticket.getId().equals(booking.getTicketID()) &&
+                            ticket.getCustomerID().equals(customer.getId())) {
+
+                        System.out.printf("%-15s | %-20s | %-10s%n",
+                                booking.getTicketID(),
+                                booking.getDateTime().format(TimeSlotBooking.DATETIME_FMT),
+                                ticket.getTicketStatus());
+                        found = true;
+                    }
+                }
+            }
+
+        } else if (user instanceof Staff technician) {
+            System.out.println("\n--- Technician Schedule ---");
+            System.out.printf("%-15s | %-20s | %-15s | %-15s%n", "Ticket ID", "Date & Time", "Cust ID", "Cust Name");
+            System.out.println("--------------------------------------------------------------------------------");
+
+            for (TimeSlotBooking booking : allBookings) {
+                for (Ticket ticket : allTickets) {
+                    // 1. Check if the ticket belongs to this booking and this technician
+                    if (ticket.getId().equals(booking.getTicketID()) &&
+                            ticket.getTechnician().equalsIgnoreCase(technician.getUsername())) {
+
+                        // 2. SEARCH for the specific customer name for THIS ticket
+                        String currentCustName = "Unknown";
+                        for (Customer c : allCustomers) {
+                            if (c.getId().equals(ticket.getCustomerID())) {
+                                currentCustName = c.getUsername();
+                                break;
+                            }
+                        }
+
+                        System.out.printf("%-15s | %-20s | %-15s | %-15s%n",
+                                booking.getTicketID(),
+                                booking.getDateTime().format(TimeSlotBooking.DATETIME_FMT),
+                                ticket.getCustomerID(),
+                                currentCustName);
+                        found = true;
+                    }
+                }
+            }
+        }
+
+        if (!found) {
+            System.out.println("  [!] No scheduled bookings found.");
+        }
     }
 
     public void selectTimeSlotBooking(String id) throws IOException {

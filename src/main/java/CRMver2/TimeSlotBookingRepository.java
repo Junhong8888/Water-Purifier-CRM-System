@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class TimeSlotBookingRepository implements FileStorage{
 
@@ -53,7 +54,7 @@ public class TimeSlotBookingRepository implements FileStorage{
         } catch (IOException e) {
             System.out.println("  Error reading booking file: " + e.getMessage());
         }
-
+        Collections.sort(bookings);
         return bookings;
     }
 

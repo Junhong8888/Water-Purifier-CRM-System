@@ -27,49 +27,36 @@ public class AuthService {
             // 1. Check Staff / Manager / Technician
             // ==========================================
             if (!expectedRole.equalsIgnoreCase("Customer")) {
-                StaffService ss = new StaffService();
-                StaffMenu staffMenu = new StaffMenu();
-
-                // BUG FIX: Force the system to read the freshest data from staff.txt
-                // so newly registered accounts aren't invisible!
+                // Fresh load to ensure we see new registrations
                 Staff.staffList = new StaffRepository().loadStaffToList();
 
                 for (Staff s : Staff.staffList) {
-                    //System.out.println("DEBUG: Checking User: " + s.getUsername() + " | Role in File: [" + s.getRole() + "]");
-                    if (s.getUsername().equalsIgnoreCase(username) && s.getPassword().equals(password)) {
+                    // 1. Match Username AND Password AND the Section Role
+                    if (s.getUsername().equalsIgnoreCase(username) &&
+                            s.getPassword().equals(password) &&
+                            s.getRole().equalsIgnoreCase(expectedRole)) {
+
                         credentialsMatched = true;
+                        System.out.println("\n[SUCCESS] Welcome " + s.getRole() + ": " + s.getUsername());
 
-                        // Enforce Section-Based Login
-                        if (s.getUsername().equalsIgnoreCase(username)
-                                && s.getPassword().equals(password)
-                                && s.getRole().equalsIgnoreCase(expectedRole)) {
-
-                            System.out.println("\n[SUCCESS] Welcome " + s.getRole() + ": " + s.getUsername());
-
-                            if(s.getRole().equalsIgnoreCase("Manager")) {
-                                new ManagerMenu().dashBoard();
-                            } else {
-                                new TechinicianMenu().dashBoard();
-                            }
-                            return;
+                        // Route to specific dashboard
+                        if (s.getRole().equalsIgnoreCase("Manager")) {
+                            new ManagerMenu().dashBoard(s);
                         } else {
-                            System.out.println("[ERROR] Username and password do not match.");
-                            return;
+                            new TechinicianMenu().dashBoard(s);
                         }
+                        return; // Exit method on successful login
                     }
                 }
-            }
 
-            for (Staff s : Staff.staffList) {
-                if (s.getUsername().equalsIgnoreCase(username)
-                        && s.getPassword().equals(password)) {
-                    credentialsMatched = true;
-                    // Credentials exist but no matching role found in the first loop
-                    System.out.println("\n[ERROR] No " + expectedRole
-                            + " account found with these credentials.");
-                    System.out.println("You have an account as: " + s.getRole()
-                            + ". Please login under the correct section.");
-                    break;
+                // 2. Optional: Check if the user exists but in a DIFFERENT role
+                // This provides a better error message if they picked the wrong menu option
+                for (Staff s : Staff.staffList) {
+                    if (s.getUsername().equalsIgnoreCase(username) && s.getPassword().equals(password)) {
+                        System.out.println("\n[ERROR] Account found, but it is registered as a " + s.getRole() + ".");
+                        System.out.println("Please go back and select the correct Login section.");
+                        return;
+                    }
                 }
             }
 
